@@ -8,7 +8,7 @@
 - หน้าหลัก: แผนที่; เมนูซ้ายเลือก **แผนที่และ GPS**, **อ่านข้อมูลและวาดทับ**, **ตั้งค่า GPS** ได้ภายใน APK เดียว
 - แตะป้ายพิกัดจุดรับ (ไม่มีการคัดลอก) → Driver hook → root relay → GPS Binder ภายในแพ็กเกจเดียว → ตรวจความถูกต้องของแอปและพิกัด → ใช้พิกัดและรอ hook ยืนยัน
 - รวม Driver hook และ GPS hook ใน `assets/xposed_init`; ไม่ติดตั้ง companion APK แยก
-- เปิดโมดูล Gozza Lalamove ใน LSPosed เลือก System Framework, Lalamove Driver และ Gozza Lalamove แล้วรีสตาร์ตเครื่องตามขั้นตอนของ LSPosed
+- เปิดโมดูล Gozza Lalamove ใน LSPosed เลือก System Framework, Lalamove Driver, Google Maps และ Gozza Lalamove แล้วรีสตาร์ตเครื่องตามขั้นตอนของ LSPosed
 - ปิดการตรวจ/บังคับอัปเดตจาก Full Lock และ GeoX สาธารณะ แจก APK โดยตรง ไม่มีการ publish เว็บหรือ deploy backend
 
 ## โหมดอ่านข้อมูลและวาดทับ
@@ -47,3 +47,9 @@ Gozza รุ่นนี้ไม่ใช้บัญชีสมาชิก �
 ดูแผนตรวจโค้ดที่ `docs/UI_REDESIGN_AUDIT.md` สีและ typography อยู่ใน `design/tokens.json` สร้าง XML/Java ด้วย `python tools/generate-design.py` ใช้ system sans-serif พร้อม Thai fallback ไม่มี remote font
 
 ควบคุมเครื่องทดสอบด้วย `control/access.json` ตาม [คู่มือ](control/README.md) ไม่ใช้ Firebase/Cloudflare ไม่มีล็อกอิน ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อตรวจสิทธิ์
+
+## Google Maps GPS hook (0.1.49)
+
+เพิ่ม `com.google.android.apps.maps` ใน suggested/required scope ของโมดูลเดียวกัน ใช้ตำแหน่งที่เลือกหรือแตะจาก Driver ผ่าน GPS engine เดิม เมื่ออัปเดตแล้วให้เข้า **อ่านข้อมูลและวาดทับ → เตรียมโมดูล LSPosed รุ่นใหม่** เพื่อเพิ่มขอบเขตโดยเก็บค่าเดิมไว้ แล้วปิด Google Maps ให้สนิทและเปิดใหม่เพื่อโหลด hook ในโปรเซสใหม่
+
+ตำแหน่งภายในแผนที่ของ Gozza ยังคงแสดงตามพฤติกรรมเดิม แอป Gozza เองอยู่ใน ignore list ของ location override เพื่อไม่ให้การเลือกพิกัดวนกลับมาทับกัน ใช้ปุ่มตำแหน่งปัจจุบันในแอป Google Maps แยกเพื่อตรวจผล

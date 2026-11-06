@@ -4,6 +4,7 @@
         <item>android</item>
         <item>com.lalamove.global.driver.sea</item>
         <item>com.gozza.lalamove</item>
+        <item>com.google.android.apps.maps</item>
 
     </string-array>
 

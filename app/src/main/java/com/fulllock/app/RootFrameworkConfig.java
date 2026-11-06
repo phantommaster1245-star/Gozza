@@ -2,8 +2,8 @@ package com.fulllock.app;
 import android.database.Cursor;import android.database.sqlite.SQLiteDatabase;import android.content.ContentValues;import java.io.File;import java.util.*;
 /** Root-only, schema-checked setup for this unified module. Other modules and scopes are preserved. */
 public final class RootFrameworkConfig {
- static final String MODULE="com.gozza.lalamove",DRIVER="com.lalamove.global.driver.sea";
- static final Set<String> REQUIRED=Set.of(MODULE,DRIVER,"android");
+ static final String MODULE="com.gozza.lalamove",DRIVER="com.lalamove.global.driver.sea",MAPS="com.google.android.apps.maps";
+ static final Set<String> REQUIRED=Set.of(MODULE,DRIVER,"android",MAPS);
  private static Set<String> columns(SQLiteDatabase db,String table){Set<String> result=new HashSet<>();try(Cursor c=db.rawQuery("PRAGMA table_info("+table+")",null)){while(c.moveToNext())result.add(c.getString(c.getColumnIndexOrThrow("name")));}return result;}
  static String inspectLegacy(SQLiteDatabase db,File apk)throws Exception {
   try(Cursor module=db.rawQuery("SELECT mid,apk_path,enabled FROM modules WHERE module_pkg_name=?",new String[]{MODULE})){
