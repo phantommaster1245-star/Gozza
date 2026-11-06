@@ -15,7 +15,7 @@ public final class DriverBridge extends ContentProvider {
  private static volatile long driverActiveUntil;
  private static volatile String distanceStatus="No diagnostic packet";
  static boolean driverForeground(){return SystemClock.elapsedRealtime()<driverActiveUntil;}
- static boolean viewsEnabled(Context c){return !RootSetup.updatePending&&RootMode.enabled(c)&&c.getSharedPreferences("root_research",0).getBoolean("screenViews",false);}
+ static boolean viewsEnabled(Context c){return io.github.phantom.gps.utils.TesterAccess.available(c)&&!RootSetup.updatePending&&RootMode.enabled(c)&&c.getSharedPreferences("root_research",0).getBoolean("screenViews",false);}
  static String screenSummary(){return SystemClock.elapsedRealtime()-screenAt<6000?screen:"พักอ่านโครงสร้างหน้าจอ / รอ Driver";}
  private static volatile int packets;
  private static volatile long probeAt;
@@ -61,6 +61,7 @@ public final class DriverBridge extends ContentProvider {
   return localCall(getContext(),method,data);
  }
  static Bundle localCall(Context context,String method,Bundle data){
+  if(!io.github.phantom.gps.utils.TesterAccess.available(context))return ScreenActions.controls(context);
   if(!AppIntegrity.trusted(context))throw new SecurityException("Official Gozza Lalamove required");
   if("screen_paused".equals(method)){DetailActions.left();driverActiveUntil=0;changed();ScreenActions.paused();return Bundle.EMPTY;}
   if("screen_permit".equals(method))return ScreenActions.permit(context,data);

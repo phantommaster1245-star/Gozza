@@ -176,10 +176,11 @@ abstract class BaseMapActivity: AppCompatActivity() {
     private var membershipUiJob: Job? = null
     override fun onResume() {
         super.onResume()
+        if(!io.github.phantom.gps.utils.TesterAccess.ensure(this))return
         viewModel.updateXposedState()
         membershipUiJob?.cancel()
         membershipUiJob = lifecycleScope.launch {
-            while (isActive) { updateMemberDetails(); delay(60000) }
+            while (isActive) { if(!io.github.phantom.gps.utils.TesterAccess.ensure(this@BaseMapActivity))break; updateMemberDetails(); delay(1000) }
         }
     }
     override fun onPause() { membershipUiJob?.cancel(); super.onPause() }
@@ -244,6 +245,7 @@ abstract class BaseMapActivity: AppCompatActivity() {
 
     protected fun updateLocationChrome() {
         updateMemberDetails()
+        binding.selectedCoordinates.text = if(coordinatesReady) String.format(java.util.Locale.US,"%.6f, %.6f",lat,lon) else "เลือกตำแหน่งบนแผนที่"
         binding.startButton.isEnabled = coordinatesReady
         if(!PrefManager.isHookSharingAvailable)binding.locationStatus.text="LSPosed?"
         else binding.locationStatus.setText(if (PrefManager.isStarted) R.string.geox_active else R.string.geox_ready)

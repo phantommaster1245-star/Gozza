@@ -24,6 +24,7 @@ class JoystickService : Service(),View.OnTouchListener,View.OnClickListener {
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate() {
         super.onCreate()
+        if(!GpsAccess.available(this)){stopSelf();return}
         wm =  getSystemService(WINDOW_SERVICE) as WindowManager
         val mInflater :LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         mJoystickContainerView = mInflater.inflate(R.layout.joystick, null as ViewGroup?) as View

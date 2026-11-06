@@ -16,6 +16,7 @@ open class App:Application() {
  override fun onCreate() {
   super.onCreate();gsApp=this
   if(!AppIntegrity.isSelfValid(this))return
+  io.github.phantom.gps.utils.TesterAccess.start(this)
   commonInit();AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
   ProcessLifecycleOwner.get().lifecycle.addObserver(object:DefaultLifecycleObserver {
    override fun onStart(owner:LifecycleOwner) { LicenseGuard.onAppForeground(this@App) }

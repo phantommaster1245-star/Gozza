@@ -7,16 +7,16 @@ final class CardInfoDrawable extends Drawable {
  CardInfoDrawable(float d,List<Slot> slots,BooleanSupplier current,android.os.Bundle style){this(d,slots,current);if(style!=null)this.style=new android.os.Bundle(style);}
  CardInfoDrawable(float d,List<Slot> slots,BooleanSupplier current){this.d=d;this.slots=slots;this.current=current;}
  public void draw(Canvas c){if(!current.getAsBoolean())return;for(Slot s:slots){RectF r=s.rect();
-  {p.setColor(style.getInt("rootOverlayBackground",0xFF1B2023));p.setStyle(Paint.Style.FILL);c.drawRoundRect(r,3*d,3*d,p);}
+  {p.setColor(style.getInt("rootOverlayBackground",com.fulllock.app.GozzaDesign.surface));p.setStyle(Paint.Style.FILL);c.drawRoundRect(r,3*d,3*d,p);}
   if(s.inline()){
-   p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setTextAlign(Paint.Align.LEFT);p.setTextSize(11*d);float labelWidth=p.measureText(s.label()),gap=7*d;
+   p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setTextAlign(Paint.Align.LEFT);p.setTextSize(11*d);p.setFontFeatureSettings("tnum");float labelWidth=p.measureText(s.label()),gap=7*d;
    p.setTextSize(27*d);float available=r.width()-12*d-labelWidth-gap;while(p.measureText(s.value())>available&&p.getTextSize()>14*d)p.setTextSize(p.getTextSize()-.5f*d);
    Paint.FontMetrics fm=p.getFontMetrics();float baseline=r.centerY()-(fm.ascent+fm.descent)/2;
-   p.setColor(style.getInt("rootOverlayText",0xFFEFF5F0));p.setTextAlign(Paint.Align.RIGHT);c.drawText(s.value(),r.right-5*d,baseline,p);
-   p.setTextAlign(Paint.Align.LEFT);p.setTextSize(11*d);p.setColor(0xFFF16623);c.drawText(s.label(),r.left+5*d,baseline,p);continue;
+   p.setColor(style.getInt("rootOverlayText",com.fulllock.app.GozzaDesign.textPrimary));p.setTextAlign(Paint.Align.RIGHT);c.drawText(s.value(),r.right-5*d,baseline,p);
+   p.setTextAlign(Paint.Align.LEFT);p.setTextSize(11*d);p.setColor(com.fulllock.app.GozzaDesign.primary);c.drawText(s.label(),r.left+5*d,baseline,p);continue;
   }
-  p.setTextAlign(Paint.Align.LEFT);p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setColor(0xFFF16623);p.setTextSize((s.prominent()?10:9)*d);c.drawText(s.label(),r.left+4*d,r.top+(s.prominent()?12:10)*d,p);
-  p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setColor(style.getInt("rootOverlayText",0xFFEFF5F0));p.setTextSize((s.prominent()?19:15)*d);
+  p.setTextAlign(Paint.Align.LEFT);p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setColor(com.fulllock.app.GozzaDesign.primary);p.setTextSize(12*d);c.drawText(s.label(),r.left+4*d,r.top+13*d,p);
+  p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setColor(style.getInt("rootOverlayText",com.fulllock.app.GozzaDesign.textPrimary));p.setTextSize((s.prominent()?19:15)*d);
   while(p.measureText(s.value())>r.width()-8*d&&p.getTextSize()>10*d)p.setTextSize(p.getTextSize()-d);
   c.drawText(s.value(),r.left+4*d,r.bottom-(s.prominent()?6:3)*d,p);
  }}

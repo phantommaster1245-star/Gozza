@@ -6,7 +6,7 @@
 
 
     <EditText
-        android:id="@+id/search_edittxt"
+        android:id="@+id/search_edittxt" android:minHeight="56dp" android:textSize="16sp" android:textColor="@color/gozza_textPrimary" android:textColorHint="@color/gozza_textSecondary" android:backgroundTint="@color/gozza_primary"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_width="match_parent"

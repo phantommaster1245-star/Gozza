@@ -33,7 +33,7 @@ class Xshare {
     @Synchronized
     fun locationSnapshot(force: Boolean = false): io.github.phantom.gps.utils.HookLocationSnapshot {
         if (force) forceReload()
-        return io.github.phantom.gps.utils.HookLocationSnapshot.from(pref().all)
+        return io.github.phantom.gps.utils.HookLocationSnapshot.from(pref().all).let { it.copy(started=it.started && accessAllowed()) }
     }
 
     fun clipboardTrace(): io.github.phantom.gps.utils.ClipboardTrace? {
@@ -46,7 +46,7 @@ class Xshare {
     fun diagnosticState():android.os.Bundle {
         forceReload()
         val p=pref()
-        val valid=true
+        val valid=accessAllowed()
         val reason=if(!p.contains("start"))"SNAPSHOT_MISSING" else if(!p.getBoolean("start",false))"STOPPED" else "READY"
         return android.os.Bundle().apply {
             putString("reason",reason)
@@ -57,8 +57,10 @@ class Xshare {
 
     val directRequestId: String get() = pref().getString("direct_request_id", "").orEmpty()
 
+    private fun accessAllowed()=io.github.phantom.gps.utils.AccessPolicy.fresh(pref().all, SystemClock.elapsedRealtime(), io.github.phantom.gps.utils.MembershipLease.hookBootCount)
+
     val isStarted : Boolean
-    get() = pref().let { it.getBoolean("start", false) }
+    get() = pref().let { it.getBoolean("start", false) && accessAllowed() }
 
     val getLat: Double get() {
         val p = pref()

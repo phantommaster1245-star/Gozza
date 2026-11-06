@@ -14,7 +14,7 @@ final class ScreenActions {
   b.putInt("pickupTouchPercent",PickupTouchArea.percent(Store.prefs(c).getInt("pickupTouchPercent",PickupTouchArea.DEFAULT)));
   b.putBoolean("drawCards",Store.prefs(c).getBoolean("cardOverlayEnabled",true));
   for(String key:new String[]{"cardShowNet","cardShowDistance","cardShowRate","cardShowPickup"})b.putBoolean(key,Store.prefs(c).getBoolean(key,true));
-  b.putInt("rootOverlayBorder",0xFFF16623);b.putInt("rootOverlayBackground",0xFF1B2023);b.putInt("rootOverlayText",0xFFEFF5F0);
+  b.putInt("rootOverlayBorder",com.fulllock.app.GozzaDesign.primary);b.putInt("rootOverlayBackground",com.fulllock.app.GozzaDesign.surface);b.putInt("rootOverlayText",com.fulllock.app.GozzaDesign.textPrimary);
   b.putBoolean("rootOverlayRgb",false);b.putBoolean("rootOverlayPulse",false);
   JSONObject display=new JSONObject();try{display.put("fee",Store.prefs(c).getInt("fee",20));}catch(JSONException ignored){}
   b.putString("rules",display.toString());b.putStringArrayList("matched",new ArrayList<>());return b;

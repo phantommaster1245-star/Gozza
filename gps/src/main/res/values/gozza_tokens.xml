@@ -1,0 +1,26 @@
+<resources>
+ <color name="gozza_background">#0D1014</color>
+ <color name="gozza_surface">#191E25</color>
+ <color name="gozza_elevated">#252B34</color>
+ <color name="gozza_divider">#303640</color>
+ <color name="gozza_primary">#FF7A18</color>
+ <color name="gozza_primaryHighlight">#FFB347</color>
+ <color name="gozza_primaryPressed">#E56810</color>
+ <color name="gozza_primaryContainer">#332316</color>
+ <color name="gozza_textPrimary">#F5F6F7</color>
+ <color name="gozza_textSecondary">#969DA7</color>
+ <color name="gozza_textDisabled">#666D77</color>
+ <color name="gozza_textOnPrimary">#17120C</color>
+ <color name="gozza_success">#31C48D</color>
+ <color name="gozza_error">#FF5D65</color>
+ <color name="gozza_warning">#FFB347</color>
+ <color name="gozza_info">#69B7FF</color>
+ <color name="gozza_switchOff">#454C56</color>
+ <dimen name="gozza_text_title">24sp</dimen>
+ <dimen name="gozza_text_section">18sp</dimen>
+ <dimen name="gozza_text_number">30sp</dimen>
+ <dimen name="gozza_text_body">16sp</dimen>
+ <dimen name="gozza_text_secondary">14sp</dimen>
+ <dimen name="gozza_text_caption">12sp</dimen>
+ <dimen name="gozza_text_button">15sp</dimen>
+</resources>

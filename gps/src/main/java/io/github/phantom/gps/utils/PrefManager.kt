@@ -55,6 +55,12 @@ object PrefManager   {
     }
 
 
+    fun writeTesterAccess(allowed:Boolean,issued:Long,boot:Int) {
+        pref.edit().putBoolean("tester_access_allowed",allowed).putLong("tester_access_issued",issued)
+            .putLong("tester_access_until",if(allowed)issued+AccessPolicy.LEASE_MS else issued).putInt("tester_access_boot",boot).commit()
+    }
+    fun testerAccessValid(boot:Int)=AccessPolicy.fresh(pref.all,android.os.SystemClock.elapsedRealtime(),boot)
+
     val isStarted : Boolean
         get() = pref.getBoolean(START, false)
 

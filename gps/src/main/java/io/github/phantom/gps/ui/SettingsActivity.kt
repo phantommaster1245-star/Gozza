@@ -97,6 +97,7 @@ class ActivitySettings : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!io.github.phantom.gps.utils.TesterAccess.ensure(this)) { finish(); return }
         if (!AppIntegrity.isSelfValid(this)) {
             finish()
             return

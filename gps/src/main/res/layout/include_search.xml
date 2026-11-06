@@ -19,7 +19,7 @@
         android:layout_marginEnd="0dp"
         android:layout_marginBottom="0dp"
         android:background="@drawable/geox_panel"
-        android:textColor="#EFF5F0" android:textColorHint="#9AA8A3" android:drawableTint="#EFF5F0"
+        android:textColor="@color/gozza_textPrimary" android:textColorHint="@color/gozza_textSecondary" android:drawableTint="@color/gozza_textPrimary"
         android:drawableStart="@drawable/ic_baseline_search_24"
         android:drawablePadding="@dimen/padding_16"
         android:hint="@string/geox_search"

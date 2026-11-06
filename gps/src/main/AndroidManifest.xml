@@ -22,6 +22,7 @@
     </queries>
 
     <application>
+<activity android:name="io.github.phantom.gps.ui.TesterAccessActivity" android:exported="false" android:theme="@style/Theme.GPSSetter"/>
         <activity android:name="io.github.phantom.gps.ui.ActivitySettings" android:exported="false" android:label="@string/title_activity_settings" android:launchMode="singleTop" android:theme="@style/Theme.GPSSetter">
         </activity>
         <activity android:name="io.github.phantom.gps.ui.MapActivity" android:exported="true" android:theme="@style/Theme.GPSSetter" android:launchMode="singleTop"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter></activity>
