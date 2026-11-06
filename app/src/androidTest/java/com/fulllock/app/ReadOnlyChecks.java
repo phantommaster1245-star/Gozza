@@ -2,10 +2,10 @@ package com.fulllock.app;
 import android.app.*;import android.content.*;import android.os.Bundle;import org.json.JSONObject;
 /** Migration checks: stale Full Lock settings cannot restore opening or copying behavior. */
 public class ReadOnlyChecks extends Instrumentation {
- private boolean enroll;
- @Override public void onCreate(Bundle args){super.onCreate(args);enroll=args!=null&&"enroll".equals(args.getString("mode"));start();}
+ private boolean enroll,framework;
+ @Override public void onCreate(Bundle args){super.onCreate(args);enroll=args!=null&&"enroll".equals(args.getString("mode"));framework=args!=null&&"framework".equals(args.getString("mode"));start();}
  private void check(boolean ok,String message){if(!ok)throw new AssertionError(message);}
- @Override public void onStart(){Bundle result=new Bundle();Context c=getTargetContext();if(enroll){result.putString("deviceId",io.github.phantom.gps.utils.TesterAccess.deviceId(c));finish(Activity.RESULT_OK,result);return;}var prefs=Store.prefs(c);var saved=prefs.getAll();String[] keys={"enabled","autoAccept","pickupDirectSend"};PendingIntent intent=null;
+ @Override public void onStart(){Bundle result=new Bundle();Context c=getTargetContext();if(framework){try{result.putString("result",RootConfigurationChecks.run());finish(Activity.RESULT_OK,result);}catch(Throwable e){result.putString("error",e.toString());finish(Activity.RESULT_CANCELED,result);}return;}if(enroll){result.putString("deviceId",io.github.phantom.gps.utils.TesterAccess.deviceId(c));finish(Activity.RESULT_OK,result);return;}var prefs=Store.prefs(c);var saved=prefs.getAll();String[] keys={"enabled","autoAccept","pickupDirectSend"};PendingIntent intent=null;
   try{
    prefs.edit().putBoolean("enabled",true).putBoolean("autoAccept",true).putBoolean("pickupDirectSend",false).commit();
    Bundle config=ScreenActions.controls(c);

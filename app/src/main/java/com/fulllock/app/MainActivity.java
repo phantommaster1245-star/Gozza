@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
   if(permissions){heading("สิทธิ์การใช้งาน");for(int i:new int[]{0,3,4}){final int step=i;action(body,(PermissionSetup.ready(this,i)?"✓ ":"○ ")+PermissionSetup.TITLES[i],()->PermissionSetup.open(this,step));}}
   else {
    heading("อ่านข้อมูลและวาดทับ");body.addView(text("แสดงข้อมูลบนหน้า Driver · แตะป้ายตำแหน่งเพื่อตั้ง GPS",14,false));gap(body,12);
-   action(body,RootMode.enabled(this)?"● เปิดการอ่านข้อมูลแล้ว · แตะเพื่อปิด":"เปิดการอ่านข้อมูลผ่าน LSPosed",()->{if(RootMode.enabled(this)){RootMode.setEnabled(this,false);render();}else RootSetup.begin(this,this::render);});
+   action(body,RootSetup.updatePending?"เตรียมโมดูล LSPosed รุ่นใหม่":RootMode.enabled(this)?"● เปิดการอ่านข้อมูลแล้ว · แตะเพื่อปิด":"เปิดการอ่านข้อมูลผ่าน LSPosed",()->{if(RootMode.enabled(this)&&!RootSetup.updatePending){RootMode.setEnabled(this,false);render();}else RootSetup.begin(this,this::render);});
    toggle("แสดงข้อมูลบนการ์ดงาน",null,"cardOverlayEnabled",true);
    toggle("รายได้สุทธิ",null,"cardShowNet",true);toggle("ระยะทางงาน",null,"cardShowDistance",true);toggle("ราคาเฉลี่ยต่อกิโลเมตร",null,"cardShowRate",true);
    toggle("ป้ายตำแหน่งจุดรับ","แตะป้ายเพื่อส่งพิกัดเข้า GPS hook ทันที","cardShowPickup",true);
