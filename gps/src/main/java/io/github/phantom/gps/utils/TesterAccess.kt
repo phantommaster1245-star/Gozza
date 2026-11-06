@@ -18,6 +18,7 @@ object TesterAccess {
  private val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main.immediate)
  private val busy=AtomicBoolean(false)
  private var started=false
+ private var current=java.lang.ref.WeakReference<Activity>(null)
  private val mutable=MutableStateFlow("กำลังตรวจสิทธิ์เครื่องทดสอบ…")
  val status=mutable.asStateFlow()
  @JvmStatic fun deviceId(c:Context):String {
@@ -27,6 +28,15 @@ object TesterAccess {
  @JvmStatic fun available(c:Context)=PrefManager.testerAccessValid(MembershipLease.bootCount(c))
  @JvmStatic fun start(c:Context) {
   if(started)return;started=true
+  (c.applicationContext as android.app.Application).registerActivityLifecycleCallbacks(object:android.app.Application.ActivityLifecycleCallbacks {
+   override fun onActivityResumed(a:Activity){current=java.lang.ref.WeakReference(a)}
+   override fun onActivityPaused(a:Activity){if(current.get()===a)current.clear()}
+   override fun onActivityCreated(a:Activity,b:android.os.Bundle?){}
+   override fun onActivityStarted(a:Activity){}
+   override fun onActivityStopped(a:Activity){}
+   override fun onActivitySaveInstanceState(a:Activity,b:android.os.Bundle){}
+   override fun onActivityDestroyed(a:Activity){}
+  })
   PrefManager.writeTesterAccess(false,SystemClock.elapsedRealtime(),MembershipLease.bootCount(c))
   scope.launch { while(isActive){check(c.applicationContext);delay(60000)} }
  }
@@ -60,6 +70,7 @@ object TesterAccess {
  private fun publish(c:Context,allowed:Boolean,message:String){
   PrefManager.writeTesterAccess(allowed,SystemClock.elapsedRealtime(),MembershipLease.bootCount(c))
   mutable.value=message
+  if(!allowed)current.get()?.takeIf { it !is io.github.phantom.gps.ui.TesterAccessActivity && !it.isFinishing }?.let { ensure(it) }
   if(!allowed && PrefManager.isStarted)runCatching { LocationController.stop(c) }
   if(!allowed)runCatching { LicenseGuard.stopAllMaintenance(c); c.stopService(Intent(c,JoystickService::class.java)) }
   runCatching { LocationRefresh.send(c) }
