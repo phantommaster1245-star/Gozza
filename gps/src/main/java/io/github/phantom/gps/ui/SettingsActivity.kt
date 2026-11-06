@@ -141,7 +141,7 @@ class ActivitySettings : AppCompatActivity() {
         private var preferenceDialog: androidx.appcompat.app.AlertDialog? = null
         override fun onDisplayPreferenceDialog(preference: Preference) {
             if(preferenceDialog?.isShowing==true)return
-            val builder=MaterialAlertDialogBuilder(requireContext(),R.style.ThemeOverlay_GeoX_Dialog)
+            val builder=io.github.phantom.gps.utils.GozzaDialogs.builder(requireContext())
                 .setTitle(preference.title).setNegativeButton(android.R.string.cancel,null)
             when(preference) {
                 is EditTextPreference -> {
@@ -245,7 +245,7 @@ class ActivitySettings : AppCompatActivity() {
 
             findPreference<Preference>("hook_diagnostics")?.setOnPreferenceClickListener {
                 val input=EditText(requireContext()).apply { hint="เช่น com.example.app หรือ android";inputType=InputType.TYPE_CLASS_TEXT }
-                val dialog=MaterialAlertDialogBuilder(requireContext(),io.github.phantom.gps.R.style.ThemeOverlay_GeoX_Dialog).setTitle("ตรวจ Hook ของแอปที่เปิดอยู่")
+                val dialog=io.github.phantom.gps.utils.GozzaDialogs.builder(requireContext()).setTitle("ตรวจ Hook ของแอปที่เปิดอยู่")
                     .setMessage("เปิดแอปเป้าหมายไว้ก่อน แล้วกรอกชื่อแพ็กเกจ หากเพิ่งอัปเดตโมดูล อาจต้องเปิดแอปเป้าหมายใหม่หรือรีเครื่อง")
                     .setView(input).setPositiveButton("ตรวจสอบ",null).setNegativeButton("ยกเลิก",null).create()
                 dialog.setOnShowListener { dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {

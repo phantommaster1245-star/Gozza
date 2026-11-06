@@ -18,7 +18,7 @@ object HookDiagnostics {
         val sharing=if(PrefManager.isHookSharingAvailable)"Gozza Lalamove: ช่องทางค่าร่วมพร้อม" else "Gozza Lalamove: ช่องทางค่าร่วม LSPosed ไม่พร้อม (กำลังใช้ private prefs)"
         var answered=false
         val states=linkedSetOf<String>()
-        val dialog=MaterialAlertDialogBuilder(activity,io.github.phantom.gps.R.style.ThemeOverlay_GeoX_Dialog).setTitle("ตรวจ Hook: $target")
+        val dialog=io.github.phantom.gps.utils.GozzaDialogs.builder(activity).setTitle("ตรวจ Hook: $target")
             .setMessage(sharing+"\n\nกำลังรอคำตอบจากแอปเป้าหมาย…").setPositiveButton("ปิด",null).create()
         val observer=object:DefaultLifecycleObserver { override fun onDestroy(owner:LifecycleOwner){dialog.dismiss()} }
         val timeout=Runnable {

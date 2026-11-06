@@ -366,7 +366,7 @@ abstract class BaseMapActivity: AppCompatActivity() {
     }
 
     protected fun aboutDialog(){
-        alertDialog = MaterialAlertDialogBuilder(this,io.github.phantom.gps.R.style.ThemeOverlay_GeoX_Dialog)
+        alertDialog = io.github.phantom.gps.utils.GozzaDialogs.builder(this)
         android.view.LayoutInflater.from(alertDialog.context).inflate(R.layout.about,null).apply {
             val  titlele = findViewById<TextView>(R.id.design_about_title)
             val  version = findViewById<TextView>(R.id.design_about_version)
@@ -381,7 +381,7 @@ abstract class BaseMapActivity: AppCompatActivity() {
     }
 
     protected fun addFavoriteDialog() {
-        alertDialog =  MaterialAlertDialogBuilder(this,io.github.phantom.gps.R.style.ThemeOverlay_GeoX_Dialog).apply {
+        alertDialog =  io.github.phantom.gps.utils.GozzaDialogs.builder(this).apply {
             val view = layoutInflater.inflate(R.layout.dialog,null)
             val editText = view.findViewById<EditText>(R.id.search_edittxt)
             setTitle(getString(R.string.add_fav_dialog_title))
@@ -403,7 +403,7 @@ abstract class BaseMapActivity: AppCompatActivity() {
 
     protected fun openFavoriteListDialog() {
         if (favoriteListJob == null) getAllUpdatedFavList()
-        alertDialog = MaterialAlertDialogBuilder(this,io.github.phantom.gps.R.style.ThemeOverlay_GeoX_Dialog)
+        alertDialog = io.github.phantom.gps.utils.GozzaDialogs.builder(this)
         alertDialog.setTitle(getString(R.string.favorites))
         val view = android.view.LayoutInflater.from(alertDialog.context).inflate(R.layout.fav,null)
         val rcv = view.findViewById<RecyclerView>(R.id.favorites_list)
@@ -449,7 +449,7 @@ abstract class BaseMapActivity: AppCompatActivity() {
                 viewModel.update.collect { update ->
                     if (update != null && shownUpdateVersion != update.version) {
                         shownUpdateVersion = update.version
-                        MaterialAlertDialogBuilder(this@BaseMapActivity,io.github.phantom.gps.R.style.ThemeOverlay_GeoX_Dialog)
+                        io.github.phantom.gps.utils.GozzaDialogs.builder(this@BaseMapActivity)
                             .setTitle(update.name)
                             .setMessage(getString(R.string.update_website_message, update.changelog))
                             .setPositiveButton(R.string.update_button) { _, _ ->

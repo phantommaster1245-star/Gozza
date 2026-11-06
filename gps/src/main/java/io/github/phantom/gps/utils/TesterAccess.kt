@@ -14,7 +14,7 @@ import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicBoolean
 /** Anonymous HTTPS configuration only: never downloads executable code or embeds a GitHub token. */
 object TesterAccess {
- const val URL_BASE="https://raw.githubusercontent.com/phantommaster1245-star/Gozza/main/control/access.json"
+ const val URL_BASE="https://api.github.com/repos/phantommaster1245-star/Gozza/contents/control/access.json?ref=main"
  private val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main.immediate)
  private val busy=AtomicBoolean(false)
  private var started=false
@@ -38,7 +38,7 @@ object TesterAccess {
    override fun onActivityDestroyed(a:Activity){}
   })
   PrefManager.writeTesterAccess(false,SystemClock.elapsedRealtime(),MembershipLease.bootCount(c))
-  scope.launch { while(isActive){check(c.applicationContext);delay(60000)} }
+  scope.launch { while(isActive){check(c.applicationContext);delay(120000)} }
  }
  @JvmStatic fun retry(c:Context){scope.launch{check(c.applicationContext)}}
  @JvmStatic fun ensure(activity:Activity):Boolean {
@@ -50,9 +50,11 @@ object TesterAccess {
   if(!busy.compareAndSet(false,true))return
   try{
    val allowed=withContext(Dispatchers.IO){
-    val connection=URL(URL_BASE+"?check="+System.currentTimeMillis()).openConnection() as HttpURLConnection
+    val connection=URL(URL_BASE+"&check="+System.currentTimeMillis()).openConnection() as HttpURLConnection
     connection.connectTimeout=5000;connection.readTimeout=5000;connection.instanceFollowRedirects=false;connection.useCaches=false
     connection.setRequestProperty("Cache-Control","no-cache, no-store")
+    connection.setRequestProperty("Accept","application/vnd.github.raw+json")
+    connection.setRequestProperty("User-Agent","Gozza-Tester")
     try{
      check(connection.responseCode==200)
      val bytes=connection.inputStream.use { input ->
