@@ -1,0 +1,136 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <PreferenceCategory android:title="@string/preference_category_general">
+        
+
+        
+
+        <ListPreference
+            android:title="Map"
+            android:summary="%s"
+            android:icon="@drawable/ic_map_type"
+            android:key="map_type"
+            android:dialogTitle="Map type"
+            android:entries="@array/map_type"
+            android:entryValues="@array/map_value"
+            android:defaultValue="1" />
+
+        <Preference
+            android:key="check_update_now"
+            android:title="@string/check_update_now"
+            android:summary="@string/check_update_now_summary"
+            android:icon="@drawable/ic_update" />
+
+        <SwitchPreferenceCompat
+            android:title="@string/check_update"
+            android:summary="@string/check_update_summary"
+            android:icon="@drawable/ic_update"
+            android:widgetLayout="@layout/preference_switch_widget"
+            android:key="update_disabled"
+            android:defaultValue="false" />
+
+        <Preference
+            android:title="@string/enable_joystick"
+            android:summary="@string/enable_joystick_summary"
+            android:icon="@drawable/ic_joystick"
+            android:key="joystick_enabled"
+            android:defaultValue="false" />
+
+        <SwitchPreferenceCompat
+            android:title="@string/clipboard_monitor_toggle"
+            android:summary="@string/clipboard_monitor_toggle_summary"
+            android:icon="@drawable/ic_baseline_search_24"
+            android:key="clipboard_monitor_enabled"
+            android:defaultValue="false"
+            android:widgetLayout="@layout/preference_switch_widget" />
+
+        <Preference
+            android:key="clipboard_formats_expand"
+            android:title="@string/clipboard_formats_expand"
+            android:icon="@drawable/ic_baseline_search_24" />
+        <PreferenceCategory
+            android:key="clipboard_formats_group"
+            android:title="@string/clipboard_formats_group"
+            app:isPreferenceVisible="false">
+            <SwitchPreferenceCompat
+                android:key="clipboard_format_coordinates"
+                android:title="@string/clipboard_format_coordinates"
+                android:summary="@string/clipboard_format_coordinates_summary"
+                android:defaultValue="true"
+                android:widgetLayout="@layout/preference_switch_widget" />
+            <SwitchPreferenceCompat
+                android:key="clipboard_format_map_coordinates"
+                android:title="@string/clipboard_format_map_coordinates"
+                android:summary="@string/clipboard_format_map_coordinates_summary"
+                android:defaultValue="true"
+                android:widgetLayout="@layout/preference_switch_widget" />
+            <SwitchPreferenceCompat
+                android:key="clipboard_format_plus_codes"
+                android:title="@string/clipboard_format_plus_codes"
+                android:summary="@string/clipboard_format_plus_codes_summary"
+                android:defaultValue="true"
+                android:widgetLayout="@layout/preference_switch_widget" />
+            <SwitchPreferenceCompat
+                android:key="clipboard_format_place_text"
+                android:title="@string/clipboard_format_place_text"
+                android:summary="@string/clipboard_format_place_text_summary"
+                android:defaultValue="true"
+                android:widgetLayout="@layout/preference_switch_widget" />
+            <SwitchPreferenceCompat
+                android:key="clipboard_format_map_places"
+                android:title="@string/clipboard_format_map_places"
+                android:summary="@string/clipboard_format_map_places_summary"
+                android:defaultValue="true"
+                android:widgetLayout="@layout/preference_switch_widget" />
+        </PreferenceCategory>
+
+        <SwitchPreferenceCompat
+            android:title="@string/clipboard_auto_start"
+            android:summary="@string/clipboard_auto_start_summary"
+            android:icon="@drawable/ic_play"
+            android:key="clipboard_monitor_auto_start"
+            android:defaultValue="true"
+            android:widgetLayout="@layout/preference_switch_widget" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/xposed">
+
+        <SwitchPreferenceCompat
+            android:title="@string/advanced_hook"
+            android:summary="@string/advanced_summary"
+            android:key="system_hooked"
+            android:icon="@drawable/ic_advanced_hook"
+            android:widgetLayout="@layout/preference_switch_widget"
+        />
+
+        <EditTextPreference
+            android:defaultValue="10"
+            android:digits="0123456789"
+            android:key="accuracy_level"
+            android:title="@string/settings_of_accuracy"
+            android:icon="@drawable/ic_accuracy"
+            android:summary="10 m" />
+
+        <SwitchPreferenceCompat
+            android:title="@string/random_position"
+            android:summary="@string/random_position_summary"
+            android:icon="@drawable/ic_random_position"
+            android:key="random_position"
+            android:widgetLayout="@layout/preference_switch_widget"
+        />
+
+        <EditTextPreference
+            android:defaultValue="10"
+            android:digits="0123456789"
+            android:key="random_radius_meters"
+            android:title="@string/random_radius"
+            android:icon="@drawable/ic_random_position"
+            android:dependency="random_position"
+            android:summary="10 m" />
+
+    </PreferenceCategory>
+
+<Preference android:key="hook_diagnostics" android:title="ตรวจ Hook ในแอปเป้าหมาย" android:summary="ตรวจการโหลดโมดูล การอ่านค่าร่วม และสิทธิ์ โดยไม่เปลี่ยนตำแหน่ง"/><Preference android:key="membership_account" android:title="ออกจากระบบ" android:summary="ออกจากบัญชีและลืมข้อมูลเข้าสู่ระบบที่บันทึกไว้"/></PreferenceScreen>

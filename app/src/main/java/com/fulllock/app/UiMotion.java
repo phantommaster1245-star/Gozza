@@ -1,0 +1,14 @@
+package com.fulllock.app;
+import android.animation.ValueAnimator;import android.content.Context;import android.transition.*;import android.view.*;import android.view.animation.PathInterpolator;
+/** Android scales native Animator timing itself; never multiply by the global scale again. */
+final class UiMotion {
+ static final long QUICK=180,EXPAND=220;
+ static boolean enabled(){return ValueAnimator.areAnimatorsEnabled();}
+ static void visibility(View view,boolean show){int target=show?View.VISIBLE:View.GONE;if(view.getVisibility()==target)return;ViewGroup parent=view.getParent() instanceof ViewGroup?(ViewGroup)view.getParent():null;if(parent!=null&&parent.isLaidOut()&&parent.isAttachedToWindow()&&enabled()){TransitionManager.endTransitions(parent);TransitionSet transition=new TransitionSet().setOrdering(TransitionSet.ORDERING_TOGETHER);transition.addTransition(new ChangeBounds());transition.addTransition(new Fade());transition.setDuration(EXPAND);transition.setInterpolator(new PathInterpolator(.2f,0f,0f,1f));TransitionManager.beginDelayedTransition(parent,transition);}view.setVisibility(target);}
+ static void enter(View view,boolean slide){if(!enabled()){view.setAlpha(1);view.setTranslationY(0);return;}view.animate().cancel();view.setAlpha(0);if(slide)view.setTranslationY(6*view.getResources().getDisplayMetrics().density);view.animate().alpha(1).translationY(0).setDuration(QUICK).setInterpolator(new PathInterpolator(.2f,0f,0f,1f)).start();}
+ static void drawer(View panel){if(!enabled())return;panel.animate().cancel();panel.setTranslationX(-24*panel.getResources().getDisplayMetrics().density);panel.setAlpha(0);panel.animate().translationX(0).alpha(1).setDuration(EXPAND).setInterpolator(new PathInterpolator(.2f,0f,0f,1f)).start();}
+ static void dismissDrawer(ViewGroup overlay,View panel){Runnable remove=()->{if(overlay.getParent() instanceof ViewGroup parent)parent.removeView(overlay);};if(!enabled()||!overlay.isAttachedToWindow()){remove.run();return;}disable(overlay);if(panel!=null)panel.animate().cancel();if(panel!=null)panel.animate().translationX(-24*panel.getResources().getDisplayMetrics().density).setDuration(EXPAND).start();overlay.animate().alpha(0).setDuration(EXPAND).withEndAction(remove).start();}
+ private static void disable(View view){view.setEnabled(false);if(view instanceof ViewGroup group)for(int i=0;i<group.getChildCount();i++)disable(group.getChildAt(i));}
+ static void popup(android.widget.PopupWindow window){if(enabled()){window.setEnterTransition(new Fade().setDuration(QUICK));window.setExitTransition(new Fade().setDuration(QUICK));}else{window.setEnterTransition(null);window.setExitTransition(null);}}
+ static void feedback(View view){Context c=view.getContext();var attributes=c.obtainStyledAttributes(new int[]{android.R.attr.selectableItemBackground});try{view.setForeground(attributes.getDrawable(0));}finally{attributes.recycle();}}
+}

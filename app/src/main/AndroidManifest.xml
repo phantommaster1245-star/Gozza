@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <permission android:name="${applicationId}.CONTROL_PROBE" android:protectionLevel="signature" />
+    <uses-permission android:name="${applicationId}.CONTROL_PROBE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <queries><package android:name="com.lalamove.global.driver.sea" /><package android:name="com.fulllock.driverprobe" /><package android:name="com.gozza.lalamove" /></queries>
+    <application tools:replace="android:usesCleartextTraffic" android:name=".GozzaApp" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:label="Gozza Lalamove" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher" android:allowBackup="false" android:fullBackupContent="@xml/backup_rules" android:dataExtractionRules="@xml/data_extraction_rules" android:usesCleartextTraffic="false" android:supportsRtl="true">
+        <provider android:name=".DriverBridge" android:authorities="${applicationId}.driverbridge" android:exported="true" android:grantUriPermissions="false" />
+        <activity android:name=".NotificationOpenActivity" android:exported="false" android:excludeFromRecents="true" android:noHistory="true" android:taskAffinity="" android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity android:name=".MainActivity" android:exported="true">
+            </activity>
+        <service android:name=".JobListener" android:label="Gozza Lalamove · อ่านแจ้งเตือน Lalamove" android:exported="true" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter><action android:name="android.service.notification.NotificationListenerService" /></intent-filter>
+        </service>
+    
+
+</application>
+</manifest>

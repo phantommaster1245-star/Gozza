@@ -1,0 +1,23 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'com.fulllock.probe'
+ compileSdk 35
+ defaultConfig { applicationId 'com.fulllock.driverprobe'; minSdk 26; targetSdk 35; versionCode 44; versionName '0.0.44'; testInstrumentationRunner 'com.fulllock.probe.BadgeChecks' }
+ buildTypes { release { debuggable false; minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' } }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies { compileOnly files('libs/xposed-api-82.jar') }
+
+android.sourceSets.main.java.srcDir(rootProject.file("shared/src/main/java"))
+
+// The production app and its bundled module share the official signing identity.
+if (project(':app').android.signingConfigs.findByName('production') != null) {
+ android.signingConfigs { production { initWith project(':app').android.signingConfigs.production } }
+ android.buildTypes.release.signingConfig = android.signingConfigs.production
+}
+
+android.sourceSets.main.java.srcDir(rootProject.file("transport/src/main/java"))
+
+if (project.hasProperty("overlayDrawChecks")) { android.buildTypes.debug.applicationIdSuffix = ".qa" }
+
+if(project.hasProperty("overlayDrawChecks")){dependencies {androidTestImplementation files("libs/xposed-api-82.jar")}}

@@ -1,0 +1,79 @@
+plugins { id 'com.android.library'; id 'org.jetbrains.kotlin.android'; id 'com.google.devtools.ksp'; id 'dagger.hilt.android.plugin'; id 'kotlin-parcelize' }
+def tagName = '0.1.04'
+def gozzaSigner(boolean release) {
+ def cfg = project(':app').android.signingConfigs.findByName(release ? 'production' : 'debug')
+ if (cfg == null || cfg.storeFile == null || !cfg.storeFile.exists()) return ''
+ def ks = java.security.KeyStore.getInstance(release ? 'PKCS12' : java.security.KeyStore.getDefaultType())
+ cfg.storeFile.withInputStream { ks.load(it, cfg.storePassword.toCharArray()) }
+ return java.security.MessageDigest.getInstance('SHA-256').digest(ks.getCertificate(cfg.keyAlias).encoded).encodeHex().toString()
+}
+
+android {
+ namespace 'io.github.phantom.gps'
+ compileSdk 35
+ defaultConfig {
+  minSdk 27
+  buildConfigField 'String', 'APPLICATION_ID', '"com.gozza.lalamove"'
+  buildConfigField 'String', 'VERSION_NAME', '"0.1.47-gozza"'
+  buildConfigField 'int', 'VERSION_CODE', '48'
+        buildConfigField "String", "PUBLIC_SITE_BASE_URL", "\"https://geox-azure.vercel.app/\""
+        buildConfigField "String", "MEMBERSHIP_PUBLIC_KEY", "\"MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAxhthf2a1Y4w5zsEGJ9WXRwX4ZgN2KQnXHQTf5UIPs2cu5QDdwHVkBkLNRDWHPSqggjB/uIsdav07K2NG841iq9gU7YQX5Gfxz1UrzgnF14JHSzNTWJhjA6Mo9Ta0OB1TzKWPp3PM2b308rJLNQEs/h0hSihzZmI8Y72s+/yJArkxvEW+IapcIk3Kt/uEskmg0PiOc6tLTl1SV/o+QGp46A9d/eRwKafG2av6onreSdXEM6wYWXcJ4mN3vT9FUg3MynO7aLydcGLsbwYQJJiFGbaTibGwVlNTaD00OQvmf3LoKFHdPbRlK7uDjyiiXrRX+Cg1XkiU/vLg/ywVedIHuMtWoy78FVj2wYq8hALuvt2GCWvHe6irk6/V44QMvtHaT0imAtHgWx9ybgJAfW0mClTWHLIIs5GXVLqB9FfQllUAXYuAFBlqmm0ki/kU6Vt2iuxfa5VOw90m2pHWe8pQD6FTy9YmmJ39dSwtEiGsRsMRpVl6nuofCQ7zPHQVj/HzAgMBAAE=\""
+        buildConfigField("String", "TAG_NAME", "\"${tagName}\"")
+        buildConfigField("String", "GITHUB_RELEASES_API_BASE", "\"https://api.github.com/repos/phantommaster1245-star/PHANToM-GPS/\"")
+        buildConfigField("String", "GITHUB_RELEASES_PAGE", "\"https://github.com/phantommaster1245-star/PHANToM-GPS/releases\"")
+ }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+ kotlinOptions { jvmTarget = '17' }
+ buildFeatures { viewBinding true; buildConfig true }
+ flavorDimensions += 'version'
+ productFlavors { full { dimension 'version' } }
+ buildTypes {
+  debug { buildConfigField 'String', 'SIGNING_CERT_SHA256', '"' + gozzaSigner(false) + '"' }
+  release { buildConfigField 'String', 'SIGNING_CERT_SHA256', '"' + gozzaSigner(true) + '"' }
+ }
+}
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    fullImplementation 'androidx.work:work-runtime-ktx:2.9.0'
+
+    // temporary foss xposed fix from https://github.com/deltazefiro/Amarok-Hider/issues/160
+    // compileOnly 'de.robv.android.xposed:api:82'
+    compileOnly 'com.github.deltazefiro:XposedBridge:main-SNAPSHOT'
+    implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:4.3'
+
+    fullImplementation 'com.google.android.gms:play-services-location:21.0.1'
+    fullImplementation 'com.google.android.gms:play-services-maps:18.1.0'
+
+
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0-alpha01'
+    implementation 'androidx.activity:activity-ktx:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0-alpha05'
+    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+    implementation "androidx.drawerlayout:drawerlayout:1.2.0-alpha01"
+    implementation 'androidx.room:room-runtime:2.5.0'
+    implementation 'androidx.room:room-ktx:2.5.0'
+    ksp 'androidx.room:room-compiler:2.5.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0-alpha04"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.0-alpha04"
+    implementation "androidx.lifecycle:lifecycle-process:2.7.0"
+
+    implementation "com.google.android.material:material:1.12.0"
+    implementation "com.google.dagger:hilt-android:2.55"
+    ksp "com.google.dagger:hilt-compiler:2.55"
+
+    // timber
+    implementation 'com.jakewharton.timber:timber:5.0.1'
+
+    // retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    implementation 'com.github.lukkass222:virtual-joystick-android:1.13.5'
+}
+

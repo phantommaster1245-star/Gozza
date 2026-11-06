@@ -1,0 +1,28 @@
+package com.fulllock.app;
+import android.content.*;import android.os.*;import com.fulllock.transport.*;import java.util.*;
+/** Local root Binder relay. Contains no job decisions, files or network listener. */
+@android.annotation.SuppressLint("MissingPermission") // Runs only as root via app_process.
+public final class LocalRelayMain {
+ private static final Set<String> METHODS=Set.of("screen_config","screen_paused","screen_permit","screen_result","update");
+ private static final java.util.concurrent.ExecutorService forwarding=java.util.concurrent.Executors.newSingleThreadExecutor();private static final java.util.concurrent.atomic.AtomicBoolean inFlight=new java.util.concurrent.atomic.AtomicBoolean();
+ private static volatile IBinder control,probe,gps;private static volatile long heartbeat=SystemClock.elapsedRealtime();
+ public static void main(String[] args)throws Exception{
+  if(android.os.Process.myUid()!=0||args.length!=2)return;int owner=Integer.parseInt(args[0]),driver=Integer.parseInt(args[1]);if(owner<10000||driver<10000||owner==driver)return;
+  Looper.prepareMainLooper();Class<?> clazz=Class.forName("android.app.ActivityThread");var main=clazz.getDeclaredMethod("systemMain");main.setAccessible(true);Object thread=main.invoke(null);var get=clazz.getDeclaredMethod("getSystemContext");get.setAccessible(true);Context context=(Context)get.invoke(thread);
+  Binder relay=new Binder(){protected boolean onTransact(int code,Parcel data,Parcel reply,int flags)throws RemoteException{
+   int uid=Binder.getCallingUid();if(uid!=owner&&uid!=driver)throw new SecurityException("Unexpected relay caller");data.enforceInterface(RelayEndpoint.TOKEN);
+   if(code==RelayEndpoint.HELLO){IBinder callback=data.readStrongBinder();String nonce=data.readString();if(callback==null||nonce==null||nonce.length()>80)throw new SecurityException("Handshake");Parcel hello=Parcel.obtain(),ack=Parcel.obtain();try{hello.writeInterfaceToken(RelayEndpoint.TOKEN);hello.writeString(nonce);callback.transact(RelayEndpoint.PROVE,hello,ack,0);ack.readException();}finally{hello.recycle();ack.recycle();}
+    if(uid==owner){control=callback;heartbeat=SystemClock.elapsedRealtime();callback.linkToDeath(()->{if(control==callback){control=null;System.exit(0);}},0);}else{probe=callback;callback.linkToDeath(()->{if(probe==callback)probe=null;},0);}reply.writeNoException();return true;
+   }
+   if(code==RelayEndpoint.PING&&uid==owner){heartbeat=SystemClock.elapsedRealtime();reply.writeNoException();return true;}
+   if(code==RelayEndpoint.GPS_CONFIG&&uid==owner){IBinder session=data.readStrongBinder();if(data.dataAvail()!=0)throw new SecurityException("Invalid GPS session");gps=session;reply.writeNoException();return true;}
+   if(code==RelayEndpoint.GPS_SEND&&uid==driver){if(data.dataSize()>8192||control==null||SystemClock.elapsedRealtime()-heartbeat>4000)throw new SecurityException("GPS controller unavailable");String id=data.readString();double lat=data.readDouble(),lng=data.readDouble();String label=data.readString();ResultReceiver callback=ResultReceiver.CREATOR.createFromParcel(data);if(data.dataAvail()!=0||!GpsWire.valid(id,lat,lng,label))throw new SecurityException("Invalid GPS request");IBinder session=gps;if(session==null||!session.isBinderAlive())throw new SecurityException("GPS session unavailable");long identity=Binder.clearCallingIdentity();try{GpsWire.submit(session,id,lat,lng,label,callback);}finally{Binder.restoreCallingIdentity(identity);}reply.writeNoException();return true;}
+   if(code==RelayEndpoint.STOP&&uid==owner){control=null;reply.writeNoException();new Thread(()->{try{Thread.sleep(50);}catch(Exception ignored){}System.exit(0);}).start();return true;}
+   if(code==RelayEndpoint.CALL&&uid==driver){String method=data.readString(),text=data.readString();if(!METHODS.contains(method)||text==null||text.length()>LocalFrames.MAX)throw new SecurityException("Invalid message");IBinder target=control;if(target==null||SystemClock.elapsedRealtime()-heartbeat>4000)throw new SecurityException("Controller unavailable");if(!inFlight.compareAndSet(false,true))throw new SecurityException("Controller busy");java.util.concurrent.Future<String> pending=forwarding.submit(()->{Parcel request=Parcel.obtain(),response=Parcel.obtain();try{request.writeInterfaceToken(RelayEndpoint.TOKEN);request.writeString(method);request.writeString(text);target.transact(RelayEndpoint.DISPATCH,request,response,0);response.readException();String result=response.readString();if(result==null||result.length()>LocalFrames.MAX)throw new SecurityException("Invalid reply");return result;}finally{request.recycle();response.recycle();inFlight.set(false);}});
+    try{String result=pending.get(250,java.util.concurrent.TimeUnit.MILLISECONDS);if(control!=target||SystemClock.elapsedRealtime()-heartbeat>4000)throw new SecurityException("Control session changed");reply.writeNoException();reply.writeString(result);return true;}catch(Exception timeout){throw new SecurityException("Controller did not reply");}}
+
+   throw new SecurityException("Unexpected relay operation");
+  }};
+  Handler handler=new Handler(Looper.getMainLooper());handler.post(new Runnable(){public void run(){if(SystemClock.elapsedRealtime()-heartbeat>10000)System.exit(0);if(control==null)publish("com.gozza.lalamove");if(probe==null)publish("com.lalamove.global.driver.sea");handler.postDelayed(this,1000);}void publish(String name){try{Intent intent=new Intent(RelayEndpoint.ACTION).setPackage(name);Bundle bundle=new Bundle();bundle.putBinder("relay",relay);intent.putExtras(bundle);context.sendBroadcastAsUser(intent,android.os.Process.myUserHandle());}catch(Exception ignored){}}});Looper.loop();
+ }
+}

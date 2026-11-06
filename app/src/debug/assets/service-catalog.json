@@ -1,0 +1,55 @@
+{
+  "source": "https://www.lalamove.com/th-th/additional-service",
+  "checked": "2026-10-25",
+  "note": "Symbols below are Full Lock display symbols, not Lalamove artwork. Services vary by vehicle/market; only show when observed. Official page text and old symbol artwork show different numeric height/length examples; do not infer vehicle limits from icons.",
+  "services": [
+    {
+      "name": "ฝากส่ง",
+      "symbol": "✉"
+    },
+    {
+      "name": "เดินเอกสาร",
+      "symbol": "▤"
+    },
+    {
+      "name": "ส่งเอกสารคืน",
+      "symbol": "▤"
+    },
+    {
+      "name": "เก็บเงินปลายทาง (COD)",
+      "symbol": "฿"
+    },
+    {
+      "name": "ไป–กลับ",
+      "symbol": "↔"
+    },
+    {
+      "name": "ช่วยยก",
+      "symbol": "↥"
+    },
+    {
+      "name": "สูงพิเศษ",
+      "symbol": "↕"
+    },
+    {
+      "name": "ยาวพิเศษ",
+      "symbol": "↔"
+    },
+    {
+      "name": "เพิ่มน้ำหนัก",
+      "symbol": "⚖"
+    },
+    {
+      "name": "กล่องบรรจุอาหาร",
+      "symbol": "🍱"
+    },
+    {
+      "name": "รถเข็น",
+      "symbol": "▣"
+    },
+    {
+      "name": "บริการเหมา",
+      "symbol": "◷"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8'?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <permission android:name="${applicationId}.permission.REFRESH_LOCATION" android:protectionLevel="signature" />
+    <uses-permission android:name="${applicationId}.permission.REFRESH_LOCATION" />
+
+    <queries>
+        <package android:name="com.gozza.lalamove" />
+    </queries>
+
+    <application>
+        <activity android:name="io.github.phantom.gps.ui.ActivitySettings" android:exported="false" android:label="@string/title_activity_settings" android:launchMode="singleTop" android:theme="@style/Theme.GPSSetter">
+        </activity>
+        <activity android:name="io.github.phantom.gps.ui.MapActivity" android:exported="true" android:theme="@style/Theme.GPSSetter" android:launchMode="singleTop"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter></activity>
+        <service android:name="io.github.phantom.gps.utils.MembershipHeartbeatService" android:exported="false" android:foregroundServiceType="specialUse"><property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Maintain a user-started Xposed location override with STOP control and enforce signed membership leases" /></service>
+        
+        <service android:name="io.github.phantom.gps.utils.FullLockRelayService" android:exported="true" />
+
+        <service android:name="io.github.phantom.gps.utils.JoystickService" android:exported="false" />
+
+        <service android:name="io.github.phantom.gps.utils.ClipboardMonitorService" android:exported="false" />
+
+        <receiver android:name="io.github.phantom.gps.utils.StopLocationReceiver" android:exported="false" />
+
+        <receiver android:name="io.github.phantom.gps.utils.StartLocationReceiver" android:exported="false" />
+
+        <receiver android:name="io.github.phantom.gps.utils.ClipboardLocationReceiver" android:exported="true" />
+
+        <receiver android:name="io.github.phantom.gps.utils.DirectLocationReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="${applicationId}.action.SET_LOCATION_DIRECT" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="io.github.phantom.gps.utils.ShellCommandReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="${applicationId}.action.SHELL_COMMAND" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="io.github.phantom.gps.utils.BootReceiver" android:enabled="true" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.USER_UNLOCKED" />
+            </intent-filter>
+        </receiver>
+
+
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDJHl2fdyya0PuEY-LRFUZM71pijfZN6IE" />
+
+
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.provider" android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/provider_paths" />
+        </provider>
+
+        <meta-data android:name="xposedmodule" android:value="true" />
+        <meta-data android:name="xposeddescription" android:value="@string/xposed_desc" />
+        <meta-data android:name="xposedminversion" android:value="93" />
+        <meta-data android:name="xposedsharedprefs" android:value="true" />
+        <meta-data android:name="xposedscope" android:resource="@array/scopes" />
+    </application>
+
+</manifest>

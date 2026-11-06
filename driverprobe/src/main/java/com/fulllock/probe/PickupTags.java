@@ -1,0 +1,35 @@
+package com.fulllock.probe;
+import android.content.*;import android.graphics.*;import android.graphics.drawable.Drawable;import android.view.*;import android.widget.*;import com.fulllock.app.PickupCoordinates;import java.util.*;import java.util.function.Supplier;
+/** Only touches beginning on a current coordinate tag are consumed. Never dispatches a card click. */
+final class PickupTags {
+ record Target(View root,TextView origin,Supplier<PickupCoordinates.Point> point,Supplier<Float> clipTop,View layer){
+  Target(View root,TextView origin,Supplier<PickupCoordinates.Point> point){this(root,origin,point,()->Float.NEGATIVE_INFINITY,root);}
+  Target(View root,TextView origin,Supplier<PickupCoordinates.Point> point,Supplier<Float> clipTop){this(root,origin,point,clipTop,contentLayer(root,origin));}
+ }
+ static View contentLayer(View root,View origin){for(View view=origin.getParent() instanceof View?(View)origin.getParent():null;view!=null&&view!=root;view=view.getParent() instanceof View?(View)view.getParent():null)if(view.getWidth()>=root.getWidth()*.75f)return view;return root;}
+
+ private final Context context;private final List<Tag> tags=new ArrayList<>();private Tag pressed;private float downX,downY;private boolean moved;
+ interface Sender {void send(PickupCoordinates.Point point,String label);}
+ private final Sender sender;
+ PickupTags(Context c){this(c,(point,label)->PickupGpsSender.send(c,point,label));}
+ PickupTags(Context c,Sender sender){context=c;this.sender=sender;}
+ PickupTags(Context c,Sender sender,Sender ignoredCopier){this(c,sender);}
+ void directSend(boolean ignored){}
+ private int touchPercent=com.fulllock.app.PickupTouchArea.DEFAULT;
+ private boolean sendEnabled;
+ void sendEnabled(boolean enabled){sendEnabled=enabled;}
+ void touchPercent(int percent){touchPercent=com.fulllock.app.PickupTouchArea.percent(percent);}
+ private final class Tag extends Drawable {Target target;final PickupCoordinates.Point point;final String[] labels;final Paint paint=new Paint(3);Tag(Target t,PickupCoordinates.Point p){target=t;point=p;double lat=Double.parseDouble(p.latitude()),lng=Double.parseDouble(p.longitude());labels=new String[3];for(int i=0;i<3;i++)labels[i]=String.format(java.util.Locale.ROOT,"%."+(i+2)+"f,%."+(i+2)+"f",lat,lng);}
+  String label(int decimals){return labels[Math.max(0,Math.min(2,decimals-2))];}
+  RectF screen(boolean verify){View root=target.root();TextView origin=target.origin();if(!origin.isShown()||!root.isShown()||!root.hasWindowFocus()||(verify&&!point.equals(target.point().get())))return null;Rect visible=new Rect();if(!origin.getGlobalVisibleRect(visible))return null;int[] xy=new int[2],base=new int[2];origin.getLocationOnScreen(xy);root.getLocationOnScreen(base);float d=root.getResources().getDisplayMetrics().density;float lineRight=origin.getLayout()==null?origin.getPaint().measureText(origin.getText().toString()):origin.getLayout().getLineRight(0);float x=xy[0]+origin.getCompoundPaddingLeft()-origin.getScrollX()+lineRight+7*d;paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));paint.setTextSize(11*d);float desired=paint.measureText(label(4))+12*d;float right=Math.min(base[0]+root.getWidth()-8*d,x+desired);if(right-x<72*d)return null;Paint.FontMetrics metrics=origin.getPaint().getFontMetrics();float center=xy[1]+origin.getBaseline()+(metrics.ascent+metrics.descent)/2;float top=center-12*d,bottom=center+12*d;Rect viewport=new Rect();if(!root.getGlobalVisibleRect(viewport))return null;float floor=Math.max(viewport.top,target.clipTop().get());if(bottom<=floor||top>=viewport.bottom)return null;return new RectF(x,verify?Math.max(top,floor):top,right,Math.min(bottom,viewport.bottom));}
+  RectF hit(){RectF r=screen(false);if(r==null)return null;float d=target.root().getResources().getDisplayMetrics().density;r.inset(-com.fulllock.app.PickupTouchArea.padding(r.width(),touchPercent),-com.fulllock.app.PickupTouchArea.padding(24*d,touchPercent));Rect visible=new Rect();if(!target.root().getGlobalVisibleRect(visible))return null;float floor=Math.max(visible.top,target.clipTop().get());return r.intersect(visible.left,floor,visible.right,visible.bottom)?r:null;}
+  boolean currentPoint(){try{return point.equals(target.point().get());}catch(Throwable ignored){return false;}}
+
+  public void draw(Canvas c){RectF r=screen(false);if(r==null)return;int[] base=new int[2];target.layer().getLocationOnScreen(base);r.offset(-base[0],-base[1]);int save=c.save();c.clipRect(0,Math.max(0,target.clipTop().get()-base[1]),target.layer().getWidth(),target.layer().getHeight());float d=target.root().getResources().getDisplayMetrics().density;paint.setColor(0xFF1B2023);c.drawRoundRect(r,3*d,3*d,paint);paint.setColor(0xFFF16623);paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));paint.setTextSize(11*d);paint.setTextAlign(Paint.Align.CENTER);Paint.FontMetrics fm=paint.getFontMetrics();String value=label(4);for(int decimals=3;paint.measureText(value)>r.width()-10*d&&decimals>=2;decimals--)value=label(decimals);while(paint.measureText(value)>r.width()-10*d&&paint.getTextSize()>8*d)paint.setTextSize(paint.getTextSize()-d);fm=paint.getFontMetrics();c.drawText(value,r.centerX(),r.centerY()-(fm.ascent+fm.descent)/2,paint);c.restoreToCount(save);}
+  public void setAlpha(int a){}public void setColorFilter(ColorFilter f){}public int getOpacity(){return PixelFormat.TRANSLUCENT;}
+ }
+ void clear(){for(Tag tag:tags)tag.target.layer().getOverlay().remove(tag);tags.clear();}
+ void update(List<Target> targets){List<Tag> next=new ArrayList<>();for(Target target:targets){PickupCoordinates.Point point=target.point().get();if(point==null)continue;Tag tag=null;for(Tag old:tags)if(old.target.root()==target.root()&&old.target.origin()==target.origin()&&old.target.layer()==target.layer()&&old.point.equals(point)){tag=old;tag.target=target;break;}if(tag==null){tag=new Tag(target,point);tag.setBounds(0,0,target.layer().getWidth(),target.layer().getHeight());target.layer().getOverlay().add(tag);}next.add(tag);}for(Tag old:tags)if(!next.contains(old))old.target.layer().getOverlay().remove(old);tags.clear();tags.addAll(next);}
+
+ boolean touch(MotionEvent event){if(!sendEnabled){boolean captured=pressed!=null;pressed=null;return captured;}float x=event.getRawX(),y=event.getRawY();if(event.getActionMasked()==MotionEvent.ACTION_DOWN){pressed=null;for(Tag tag:tags){RectF r=tag.hit();if(r!=null&&r.contains(x,y)){pressed=tag;downX=x;downY=y;moved=false;return true;}}return false;}if(pressed==null)return false;if(event.getPointerCount()>1||Math.hypot(x-downX,y-downY)>ViewConfiguration.get(context).getScaledTouchSlop())moved=true;if(event.getActionMasked()==MotionEvent.ACTION_UP){Tag tag=pressed;pressed=null;RectF r=tag.hit();if(!moved&&r!=null&&r.contains(x,y)&&tag.currentPoint()&&tags.stream().anyMatch(current->current.target.origin()==tag.target.origin()&&current.point.equals(tag.point))){sender.send(tag.point,tag.target.origin().getText().toString());}}else if(event.getActionMasked()==MotionEvent.ACTION_CANCEL)pressed=null;return true;}
+}

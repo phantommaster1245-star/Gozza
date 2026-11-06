@@ -1,0 +1,15 @@
+<resources>
+    <style name="Theme.GPSSetter" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="colorPrimary">#F16623</item><item name="colorOnPrimary">#FFFFFF</item><item name="colorSecondary">#F16623</item><item name="colorOnSecondary">#FFFFFF</item><item name="colorSurface">#1B2023</item><item name="colorControlNormal">#9AA8A3</item><item name="colorControlActivated">#F16623</item><item name="colorControlHighlight">#33F16623</item><item name="android:colorAccent">#F16623</item><item name="colorSurfaceContainerHigh">#1B2023</item><item name="colorSurfaceContainerHighest">#292F33</item><item name="colorSurfaceContainer">#1B2023</item><item name="colorSurfaceVariant">#292F33</item><item name="colorOnSurface">#EFF5F0</item><item name="colorOnSurfaceVariant">#9AA8A3</item><item name="android:colorBackground">#101416</item><item name="android:windowBackground">#101416</item><item name="android:textColorPrimary">#EFF5F0</item><item name="android:textColorSecondary">#9AA8A3</item><item name="colorOutline">#384047</item><item name="colorPrimaryContainer">#292F33</item><item name="colorOnPrimaryContainer">#F16623</item><item name="colorSecondaryContainer">#292F33</item><item name="colorOnSecondaryContainer">#EFF5F0</item>
+
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">@bool/lightStatusNav</item>
+        <item name="android:windowLightNavigationBar">@bool/lightStatusNav</item>
+        <item name="android:overScrollMode">@integer/overscroll_enabled</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.GeoX.Dialog</item><item name="alertDialogTheme">@style/ThemeOverlay.GeoX.Dialog</item>
+        <item name="actionOverflowMenuStyle">@style/GPSSetterOverflowMenu</item>
+
+    </style>
+<style name="ThemeOverlay.GeoX.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog"><item name="colorSurface">#1B2023</item><item name="colorControlNormal">#9AA8A3</item><item name="colorControlActivated">#F16623</item><item name="colorControlHighlight">#33F16623</item><item name="android:colorAccent">#F16623</item><item name="colorSurfaceContainerHigh">#1B2023</item><item name="colorSurfaceContainerHighest">#292F33</item><item name="colorSurfaceContainer">#1B2023</item><item name="colorOnSurface">#EFF5F0</item><item name="colorPrimary">#F16623</item><item name="android:textColorPrimary">#EFF5F0</item><item name="android:textColorSecondary">#9AA8A3</item><item name="backgroundTint">#1B2023</item></style></resources>

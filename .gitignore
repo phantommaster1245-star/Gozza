@@ -1,0 +1,20 @@
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+*.p12
+*signing*.properties
+.codex-remote-attachments/
+dist/
+**/__pycache__/
+
+# Private Gozza workspace artifacts
+/build-backups/
+/gps/build/
+/gps/google-services.json
+/private-backend/.secrets/
+/private-backend/functions/node_modules/
+*.log
+
+/artifacts/private/
