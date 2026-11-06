@@ -16,7 +16,7 @@ final class CardInfoDrawable extends Drawable {
    p.setTextAlign(Paint.Align.LEFT);p.setTextSize(11*d);p.setColor(com.fulllock.app.GozzaDesign.primary);c.drawText(s.label(),r.left+5*d,baseline,p);continue;
   }
   p.setTextAlign(Paint.Align.LEFT);p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setColor(com.fulllock.app.GozzaDesign.primary);p.setTextSize(12*d);c.drawText(s.label(),r.left+4*d,r.top+13*d,p);
-  p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setColor(style.getInt("rootOverlayText",com.fulllock.app.GozzaDesign.textPrimary));p.setTextSize((s.prominent()?19:15)*d);
+  p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setColor(style.getInt("rootOverlayText",com.fulllock.app.GozzaDesign.textPrimary));p.setTextSize((s.prominent()?20:12)*d);
   while(p.measureText(s.value())>r.width()-8*d&&p.getTextSize()>10*d)p.setTextSize(p.getTextSize()-d);
   c.drawText(s.value(),r.left+4*d,r.bottom-(s.prominent()?6:3)*d,p);
  }}

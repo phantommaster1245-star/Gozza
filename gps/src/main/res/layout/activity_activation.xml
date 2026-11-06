@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/activation_title"
-        android:textSize="24sp"
+        android:textSize="@dimen/gozza_text_title"
         android:textStyle="bold" />
 
     <TextView
@@ -22,7 +22,7 @@
         android:id="@+id/activationSubtitle"
         android:visibility="gone"
         android:text="@string/activation_subtitle"
-        android:textSize="14sp" />
+        android:textSize="@dimen/gozza_text_secondary" />
 
     <EditText
         android:id="@+id/activationCodeInput"

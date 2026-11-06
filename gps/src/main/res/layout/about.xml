@@ -22,21 +22,21 @@
             android:id="@+id/design_about_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="@dimen/gozza_text_section"
             android:textAppearance="@android:style/TextAppearance.Material.Body1" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/design_about_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp" />
+            android:textSize="@dimen/gozza_text_secondary" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/design_about_info"
             android:layout_marginTop="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
+            android:textSize="@dimen/gozza_text_secondary"
             android:textColor="?android:textColorSecondary" />
 
     </LinearLayout>

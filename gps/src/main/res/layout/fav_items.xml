@@ -12,7 +12,7 @@
 
     <TextView
         android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem"
-        android:id="@+id/address" android:minHeight="56dp" android:gravity="center_vertical" android:textSize="16sp"
+        android:id="@+id/address" android:minHeight="56dp" android:gravity="center_vertical" android:textSize="@dimen/gozza_text_body"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"

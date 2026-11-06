@@ -24,7 +24,7 @@
         android:drawablePadding="@dimen/padding_16"
         android:hint="@string/geox_search"
         android:imeOptions="actionSearch"
-        android:inputType="text" android:singleLine="true" android:textSize="14sp"
+        android:inputType="text" android:singleLine="true" android:textSize="@dimen/gozza_text_secondary"
         android:paddingStart="@dimen/padding_16"
         android:paddingEnd="52dp"   
     />

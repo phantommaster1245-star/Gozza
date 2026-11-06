@@ -22,6 +22,12 @@ final class AppTheme {
     static int tint(Context c){return blend(surface(c),accent(c),.11f);}
     static int blend(int base,int color,float amount){return Color.rgb(Math.round(Color.red(base)*(1-amount)+Color.red(color)*amount),Math.round(Color.green(base)*(1-amount)+Color.green(color)*amount),Math.round(Color.blue(base)*(1-amount)+Color.blue(color)*amount));}
     static GradientDrawable background(int color,int radiusPx){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(radiusPx);return d;}
+    static android.graphics.drawable.StateListDrawable actionBackground(Context c,int radius){
+        android.graphics.drawable.StateListDrawable states=new android.graphics.drawable.StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_pressed},background(GozzaDesign.elevated,radius));
+        GradientDrawable focus=background(GozzaDesign.surface,radius);focus.setStroke(Math.round(2*c.getResources().getDisplayMetrics().density),GozzaDesign.primary);
+        states.addState(new int[]{android.R.attr.state_focused},focus);states.addState(new int[]{},background(GozzaDesign.surface,radius));return states;
+    }
     static void styleDialog(Context c,AlertDialog dialog){
         if(dialog.getWindow()==null)return;
         dialog.getWindow().setBackgroundDrawable(background(GozzaDesign.elevated,Math.round(18*c.getResources().getDisplayMetrics().density)));
