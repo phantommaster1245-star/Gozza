@@ -27,7 +27,7 @@ final class PickupTouchPreview extends View {
   label.set((getWidth()-width)/2,(getHeight()-height)/2,(getWidth()+width)/2,(getHeight()+height)/2);
   area.set(label);area.inset(-width*(shownPercent-100)/200f,-height*(shownPercent-100)/200f);
   paint.setStyle(Paint.Style.FILL);paint.setColor((accent&0x00ffffff)|0x12000000);canvas.drawRoundRect(area,3*d,3*d,paint);
-  paint.setColor(0xffeeeeee);canvas.drawRoundRect(label,3*d,3*d,paint);paint.setColor(0xff424242);paint.setTextSize(11*d);paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));paint.setTextAlign(Paint.Align.CENTER);Paint.FontMetrics fm=paint.getFontMetrics();canvas.drawText("13.8622,100.4450",label.centerX(),label.centerY()-(fm.ascent+fm.descent)/2,paint);
+  paint.setColor(Store.prefs(getContext()).getInt("pickupOverlayBackground",GozzaDesign.surface));canvas.drawRoundRect(label,3*d,3*d,paint);paint.setColor(Store.prefs(getContext()).getInt("pickupOverlayText",GozzaDesign.primary));paint.setTextSize(11*d);paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));paint.setTextAlign(Paint.Align.CENTER);Paint.FontMetrics fm=paint.getFontMetrics();canvas.drawText("13.8622,100.4450",label.centerX(),label.centerY()-(fm.ascent+fm.descent)/2,paint);
   paint.setColor(accent);paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(1.5f*d);paint.setPathEffect(new DashPathEffect(new float[]{4*d,3*d},0));canvas.drawRoundRect(area,3*d,3*d,paint);paint.setPathEffect(null);paint.setStyle(Paint.Style.FILL);
  }
 }

@@ -323,6 +323,9 @@ abstract class BaseMapActivity: AppCompatActivity() {
                 }
 
 
+                R.id.gozza_theme -> {
+                    startActivity(Intent().setClassName(packageName,"com.fulllock.app.MainActivity").putExtra("gozzaPage","theme").addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
+                }
                 R.id.settings -> {
                     startActivity(Intent(this,ActivitySettings::class.java))
                 }

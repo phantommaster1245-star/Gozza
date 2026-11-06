@@ -14,7 +14,7 @@ if (signingReady) {
 android {
     namespace 'com.fulllock.app'
     compileSdk 35
-    defaultConfig { applicationId 'com.gozza.lalamove'; minSdk 27; targetSdk 35; versionCode 50; versionName '0.1.49'; testInstrumentationRunner 'com.fulllock.app.ReadOnlyChecks' }
+    defaultConfig { applicationId 'com.gozza.lalamove'; minSdk 27; targetSdk 35; versionCode 51; versionName '0.1.50'; testInstrumentationRunner 'com.fulllock.app.ReadOnlyChecks' }
     defaultConfig { buildConfigField "boolean", "DEVICE_NOTIFICATION_CHECKS", project.hasProperty("deviceNotificationHarness") ? "true" : "false" }
     if (project.hasProperty("deviceNotificationHarness")) sourceSets.main.java.srcDir("src/deviceChecks/java")
     defaultConfig { buildConfigField "boolean", "PRIVATE_DISTRIBUTION", "true" }

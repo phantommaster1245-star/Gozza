@@ -10,6 +10,7 @@
     <group android:checkableBehavior="single">
         <item android:id="@+id/gozza_map" android:title="แผนที่และ GPS" android:checked="true" android:icon="@drawable/ic_baseline_my_location_24"/>
         <item android:id="@+id/gozza_filters" android:title="อ่านข้อมูลและวาดทับ" android:icon="@drawable/ic_outline_settings_24"/>
+        <item android:id="@+id/gozza_theme" android:title="ธีมการวาดทับ" android:icon="@drawable/ic_outline_settings_24"/>
     </group>
     <item
         android:id="@+id/settings"
