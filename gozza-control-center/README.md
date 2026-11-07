@@ -1,42 +1,15 @@
 # Gozza Control Center
 
-Dark Performance web admin for Gozza Android tester access. Frontend is static and can be deployed separately to Vercel or GitHub Pages. Google Sheets stores Devices, Settings and AuditLogs. Google Apps Script publishes to the existing **Gozza/control/access.json** file, which is read by the Android app. The existing policy file is **not changed by installing this project**.
+Google Sheets เก็บรหัสแอดมิน รายการอุปกรณ์ และสถานะอนุญาต Vercel เสิร์ฟหน้า Control Center และส่งคำขอแอดมินจาก `/api/admin` ไปยัง Apps Script ส่วน APK เรียก Apps Script โดยตรง ทั้งสองทางใช้ JSON
 
-## Files
-- `frontend/index.html` — responsive dashboard, Google sign-in and device controls.
-- `frontend/config.js` — placeholders for public OAuth client ID and Apps Script URL; fill these in before deployment.
-- `apps-script/Code.gs` and `apps-script/appsscript.json` — Google Apps Script backend.
+1. ในโปรเจกต์ Apps Script ของ Gozza ให้วาง `Code.gs` และ `appsscript.json` จากโฟลเดอร์ `apps-script` แล้วลบไฟล์ `Index.html` ที่เคยอัปโหลดไว้ใน Apps Script
+2. รัน `setupDatabase` หนึ่งครั้งจาก editor และกดอนุญาต ระบบใช้ `SPREADSHEET_ID` เดิมถ้ามี โดยเพิ่มคอลัมน์ท้ายชีต Devices และเก็บข้อมูลเดิม หากไม่มีจะสร้างชีตใหม่ เปิด URL ของชีตจาก Execution log
+3. ดูหรือเปลี่ยนรหัสแอดมินที่ `Settings` แถว `admin_password` ใช้ชีตที่แชร์เฉพาะผู้ดูแล
+4. Deploy > Manage deployments > Edit > New version โดยใช้ deployment เดิม ตั้ง Execute as Me และ Who has access Anyone เพื่อให้ APK ลงทะเบียนได้โดยไม่ต้องลงชื่อเข้าใช้ Google
+5. เปิด URL `/exec` แล้วตรวจว่าตอบ JSON ที่มี `apiVersion: 2`
+6. ใน Vercel เลือก repo เดิม ตั้ง Root Directory เป็น `gozza-control-center/frontend` และ Framework Preset เป็น Other ใช้ค่าเริ่มต้นสำหรับ Build Command และ Output Directory เพื่อเสิร์ฟ `index.html` และฟังก์ชัน `api/admin.js`
+7. เปิดเว็บ Vercel แล้วเข้าสู่ระบบด้วยรหัสในชีต หากเปลี่ยน URL `/exec` ให้ตั้ง `GOZZA_APPS_SCRIPT_URL` ใน Vercel และแก้ `TesterAccess.kt` ก่อน build APK
 
-## Configuration — backend (Google Apps Script)
+APK รุ่น 0.1.51 ส่งรหัส SHA-256 เดิม รุ่นเครื่อง และชื่ออุปกรณ์เมื่อเริ่มแอปและประมาณทุก 2 นาที รหัสใหม่สร้างหนึ่งแถวที่ `enabled=true` ส่วนรหัสเดิมอัปเดตเฉพาะข้อมูลเครื่องและเวลาเชื่อมต่อ การระงับรายเครื่องและสวิตช์รวมมีผลเมื่อแอปตรวจรอบถัดไป ตัวเลขเชื่อมต่อล่าสุดนับเครื่องที่ตรวจสิทธิ์ใน 5 นาทีที่ผ่านมา
 
-1. Create a new Apps Script project at https://script.google.com and paste `Code.gs`; configure manifest `appsscript.json`.
-2. Set **Script Properties** (Project Settings):
-   - `OWNER_EMAIL` — comma-separated allowed Google admin email addresses.
-   - `GOOGLE_CLIENT_ID` — Google Cloud OAuth Web Client ID.
-   - `FRONTEND_ORIGINS` — exact frontend origins, e.g. `https://YOURNAME.github.io` or `https://your-site.vercel.app`, comma-separated; do not include path/trailing slash.
-   - `GITHUB_OWNER` = `phantommaster1245-star`
-   - `GITHUB_REPO` = `Gozza`
-   - `GITHUB_BRANCH` = `main`
-   - `GITHUB_TOKEN` — fine-grained GitHub token with **Contents: Read and write** for Gozza. Keep it in Script Properties; **never put it in Git or frontend**.
-3. Run `setupDatabase()` manually from Apps Script editor and authorize. It creates the spreadsheet, stores `SPREADSHEET_ID` property and prints the Sheets URL in logs.
-4. Deploy > New Deployment > Web app > Execute as **Me**, Who has access **Anyone**. Each API operation independently checks a Google ID token against the approved account and Client ID.
-5. Google Cloud Console > OAuth Web Client: configure your deployment origin in **Authorized JavaScript origins**. For OAuth app in Testing, add the admin account as a test user.
-
-## Configure static frontend
-1. Edit `frontend/config.js`: set `appsScriptUrl` to the Apps Script **/exec** URL and `googleClientId` to the same Web Client ID.
-2. Deploy the `frontend` folder as a static site (Vercel Root Directory = `gozza-control-center/frontend`; Framework Preset = Other; no build command). You may instead copy these static files to GitHub Pages.
-3. Sign in using an email listed in `OWNER_EMAIL`.
-
-## IMPORTANT: preserve existing device allowlist!
-The new Sheets database starts with an empty Devices tab. Before clicking **Publish**, copy each current 64-character hash from `control/access.json` into the Devices sheet (or add them through the dashboard, noting that dashboard changes automatically publish). Otherwise previously allowed devices will be denied after the first sync. For a safe migration, add the existing device IDs first, then publish.
-
-## Behavior
-- Global switch `enabled=false`: denies all testers, without deleting their rows.
-- Per-device switch: excludes only that hash from the published allowlist.
-- AuditLogs records editor changes.
-- The app polls GitHub policy ~120 seconds; tester lease lasts at most 150 seconds, depending on app lifecycle and network.
-- Failed GitHub publishes leave the Sheets change in place and mark the dashboard OUT OF SYNC. Use **Publish to GitHub** to retry.
-- Apps Script is required for API; GitHub Pages and Vercel host **only the frontend**.
-
-## Safety
-Do not add passwords, tokens, secrets or personal Android IDs to Git. Device hash is SHA-256 of `com.gozza.lalamove|ANDROID_ID`, calculated client-side in the dashboard. This is access control for cooperative test APKs, not tamper-proof DRM. Apps Script HTML iframe transport may be blocked by stringent third-party privacy settings; test with your production browser.
+เปิดใช้ backend และทดสอบก่อนแจก APK รุ่นใหม่ เครื่องที่ใช้ APK 0.1.50 หรือต่ำกว่ายังอ่าน `control/access.json` จาก GitHub และยังไม่ปรากฏในชีตอัตโนมัติ ค่าที่มีอยู่ในชีตเดิมจะถูกเก็บไว้ การระงับรายเครื่องควรใช้ปุ่มระงับ เพราะลบแถวด้วยมือจะทำให้เครื่องนั้นลงทะเบียนใหม่ได้

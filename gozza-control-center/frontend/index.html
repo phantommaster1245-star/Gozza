@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gozza Control Center</title><script src="config.js"></script><script src="https://accounts.google.com/gsi/client" async defer></script>
+<title>Gozza Control Center</title>
 <style>
 :root{color-scheme:dark;--bg:#0a0e13;--panel:#151b23;--raised:#202936;--border:#344150;--accent:#ff762b;--text:#f2f5f8;--muted:#9ba9ba;--bad:#ff5767;--good:#4fdfa1}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,'Segoe UI',sans-serif}
@@ -23,80 +23,154 @@ table{border-collapse:collapse;width:100%}th{text-align:left;font-size:12px;colo
 #tablewrap{overflow-x:auto}@media(max-width:800px){.grid{grid-template-columns:1fr}#editform{grid-template-columns:1fr}header{padding:15px 20px}td,th{padding:8px} .brand{font-size:20px}}
 </style></head>
 <body><header><div><div class="brand"><strong>GOZZA</strong> CONTROL CENTER</div><div class="sub">ANDROID TESTER ACCESS MANAGEMENT</div></div><button id="signout" hidden>Sign out</button></header>
-<main><section class="card" id="authpanel"><h2>เข้าสู่ระบบผู้ดูแล</h2><p class="muted">บัญชี Google ที่ได้รับอนุญาตเท่านั้นจึงจะควบคุมอุปกรณ์ได้</p><div id="signin" style="display:flex;justify-content:center"></div></section>
+<main><section class="card" id="authpanel"><h2>เข้าสู่ระบบผู้ดูแล</h2>
+<form id="login"><label for="password">รหัสแอดมิน</label><input id="password" type="password" required autocomplete="current-password">
+<button class="primary" style="margin-top:12px">เข้าสู่ระบบ</button><p id="loginMessage" role="status"></p></form></section>
 <div id="dashboard">
 <div id="notice" role="status"></div>
 <div class="grid">
 <section class="card"><div class="muted">Global Policy</div><div class="stat" id="globalText">—</div><div class="tiny muted">ปิด = เครื่องทดสอบทั้งหมดถูกระงับ</div></section>
-<section class="card"><div class="muted">Authorized devices</div><div class="stat" id="count">—</div><div class="tiny muted">เฉพาะเครื่องที่เปิดสิทธิ์</div></section>
-<section class="card"><div class="muted">GitHub Policy Sync</div><div class="stat" id="syncText">—</div><div class="tiny muted" id="syncDetail"></div></section></div>
-<section class="card"><h2>Global Kill Switch</h2><div id="settingsline"><label class="switch"><input id="global" type="checkbox"> เปิดสิทธิ์การใช้งาน APK</label><button id="publish" class="primary">Publish to GitHub</button></div><p class="muted tiny">การเปลี่ยนค่าจะส่ง policy ไปที่ Gozza/control/access.json; อาจมีความหน่วงของการตรวจสอบบนมือถือ</p></section>
+<section class="card"><div class="muted">อุปกรณ์ที่อนุญาต</div><div class="stat" id="count">—</div><div class="tiny muted">จำนวนเครื่องที่เปิดสิทธิ์ / ทั้งหมด</div></section>
+<section class="card"><div class="muted">เชื่อมต่อล่าสุด 5 นาที</div><div class="stat" id="online">—</div><div class="tiny muted" id="onlineDetail"></div></section></div>
+<section class="card"><h2>Global Kill Switch</h2><div id="settingsline"><label class="switch"><input id="global" type="checkbox"> เปิดสิทธิ์การใช้งาน APK</label></div><p class="muted tiny">ค่าจะบันทึกลง Google Sheets และมีผลเมื่อแอปตรวจสิทธิ์รอบถัดไป</p></section>
 <section class="card"><h2>เพิ่ม / แก้ไขเครื่อง</h2><form id="editform">
 <div><label>Device hash (SHA-256 64 ตัว)</label><input required id="deviceId" maxlength="64" minlength="64" placeholder="64-character hash"></div>
 <div><label>ชื่อเครื่อง</label><input id="label" required maxlength="80" placeholder="เช่น เครื่องทดสอบ A"></div>
 <div><label>หมายเหตุ</label><input id="notes" maxlength="500" placeholder="หมายเหตุ (ถ้ามี)"></div>
 <div><label class="switch"><input id="deviceEnabled" type="checkbox" checked>อนุญาต</label><button class="primary" type="submit">บันทึก</button></div>
 </form><div style="margin-top:15px"><label>คำนวณ Hash จาก Android ID (ทำใน Browser ไม่ส่ง Android ID ไป API)</label><div class="row"><input id="androidId" placeholder="Android ID" style="flex:1"><button id="hashBtn">คำนวณ Hash</button></div></div></section>
-<section class="card"><div class="row" style="justify-content:space-between"><h2>รายการเครื่อง</h2><button id="reload">รีเฟรช</button></div><input id="filter" placeholder="ค้นหาเครื่อง / hash / หมายเหตุ"><div id="tablewrap"><table><thead><tr><th>เครื่อง</th><th>Device Hash</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="devices"></tbody></table></div></section>
+<section class="card"><div class="row" style="justify-content:space-between"><h2>รายการเครื่อง</h2><button id="reload">รีเฟรช</button></div><input id="filter" placeholder="ค้นหาเครื่อง / hash / หมายเหตุ"><div id="tablewrap"><table><thead><tr><th>เครื่อง</th><th>Device Hash</th><th>สถานะ</th><th>เชื่อมต่อล่าสุด</th><th>จัดการ</th></tr></thead><tbody id="devices"></tbody></table></div></section>
 <section class="card"><h2>ประวัติการเปลี่ยนแปลง</h2><div id="audit" class="muted tiny">—</div></section>
 </div></main>
 <script>
-(()=>{'use strict';
-const cfg=window.GOZZA_CONFIG||{}, $=id=>document.getElementById(id);
-let token='',state=null,busy=false,pending=new Map();
-const configured=()=>/^https:\/\//.test(cfg.appsScriptUrl||'')&&/apps\.googleusercontent\.com$/.test(cfg.googleClientId||'');
-function notice(s){$('notice').textContent=s;}
-function lock(v){busy=v;document.querySelectorAll('#dashboard button,#dashboard input').forEach(el=>el.disabled=v);}
-async function request(action,payload={}){
- if(!token)throw Error('กรุณาเข้าสู่ระบบ Google');
- const id=crypto.randomUUID(),frame=document.createElement('iframe');frame.name='gozza_'+id;frame.style.display='none';document.body.append(frame);
- const form=document.createElement('form');form.method='POST';form.action=cfg.appsScriptUrl;form.target=frame.name;form.style.display='none';
- const input=document.createElement('input');input.name='packet';input.value=JSON.stringify({id,origin:location.origin,token,action,payload});form.append(input);document.body.append(form);
- try{return await new Promise((resolve,reject)=>{
- const timer=setTimeout(()=>{pending.delete(id);reject(Error('API timeout — ตรวจสอบ Apps Script deployment / iframe'));},30000);
- pending.set(id,{resolve,reject,timer});
- form.submit();
- });}finally{form.remove();setTimeout(()=>frame.remove(),400);}
-}
-window.addEventListener('message',event=>{
- const d=event.data;
- if(!d||d.app!=='gozza-control-v1'||!pending.has(d.id))return;
- if(!['https://script.google.com','https://script.googleusercontent.com'].includes(event.origin)&&!event.origin.endsWith('.googleusercontent.com'))return;
- const p=pending.get(d.id);pending.delete(d.id);clearTimeout(p.timer);d.ok?p.resolve(d.result):p.reject(Error(d.error||'API error'));
-});
-function cell(row,s,cls=''){const td=document.createElement('td');td.textContent=String(s);td.className=cls;row.append(td);return td;}
-function btn(label,fn,cls=''){const b=document.createElement('button');b.textContent=label;b.className=cls;b.onclick=fn;return b;}
-function render(){
- if(!state)return;
- $('global').checked=state.enabled;$('globalText').textContent=state.enabled?'ENABLED':'DISABLED';$('globalText').style.color=state.enabled?'var(--good)':'var(--bad)';
- $('count').textContent=state.devices.filter(x=>x.enabled).length+' / '+state.devices.length;
- $('syncText').textContent=state.sync.inSync?'SYNCED':'OUT OF SYNC';
- $('syncText').style.color=state.sync.inSync?'var(--good)':'var(--bad)';
- $('syncDetail').textContent=state.sync.lastError||('Revision '+state.sync.revision);
- const q=$('filter').value.toLowerCase(),tbody=$('devices');tbody.replaceChildren();
- state.devices.filter(x=>(x.label+' '+x.deviceId+' '+x.notes).toLowerCase().includes(q)).forEach(x=>{
-  const tr=document.createElement('tr');cell(tr,x.label+'\n'+x.notes);cell(tr,x.deviceId,'hash');cell(tr,x.enabled?'อนุญาต':'ระงับ',x.enabled?'pill good':'pill bad');
-  const td=document.createElement('td'),buttons=document.createElement('div');buttons.className='actions';
-  buttons.append(btn('แก้ไข',()=>{$('deviceId').value=x.deviceId;$('label').value=x.label;$('notes').value=x.notes;$('deviceEnabled').checked=x.enabled;window.scrollTo({top:400,behavior:'smooth'});}));
-  buttons.append(btn(x.enabled?'ระงับ':'อนุญาต',()=>change('setDeviceEnabled',{deviceId:x.deviceId,enabled:!x.enabled}),x.enabled?'danger':''));
-  buttons.append(btn('ลบ',()=>{if(confirm('ลบเครื่อง '+x.label+' ?'))change('deleteDevice',{deviceId:x.deviceId});},'danger'));
-  td.append(buttons);tr.append(td);tbody.append(tr);
- });
- const log=$('audit');log.replaceChildren();(state.audit||[]).forEach(x=>{const p=document.createElement('div');p.textContent=x.time+' · '+x.actor+' · '+x.action+' · '+x.target;log.append(p)});
-}
-async function change(action,payload){if(busy)return;lock(true);notice('กำลังบันทึก...');try{state=await request(action,payload);render();notice(state.sync.inSync?'บันทึกและ Publish สำเร็จ':'บันทึกใน Sheets แล้ว แต่ GitHub ยังไม่ Sync: '+state.sync.lastError);}catch(e){notice('ผิดพลาด: '+e.message);}finally{lock(false)}}
-async function reload(){await change('getState',{});}
-$('global').addEventListener('change',e=>{const enabled=e.target.checked;if(!confirm(enabled?'เปิดสิทธิ์เครื่องที่ได้รับอนุญาต?':'ปิดการใช้งาน APK ทุกเครื่อง?')){render();return}change('setGlobalEnabled',{enabled});});
-$('publish').onclick=()=>change('publish',{});$('reload').onclick=reload;$('filter').oninput=render;
-$('editform').onsubmit=e=>{e.preventDefault();change('upsertDevice',{deviceId:$('deviceId').value.trim(),label:$('label').value.trim(),notes:$('notes').value.trim(),enabled:$('deviceEnabled').checked});};
-$('hashBtn').onclick=async()=>{const id=$('androidId').value.trim();if(!id)return;const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode((cfg.packageName||'com.gozza.lalamove')+'|'+id));$('deviceId').value=Array.from(new Uint8Array(buf)).map(x=>x.toString(16).padStart(2,'0')).join('');notice('คำนวณ Device Hash เรียบร้อย');};
-$('signout').onclick=()=>{token='';state=null;$('dashboard').style.display='none';$('authpanel').style.display='block';$('signout').hidden=true;notice('');};
-function startGoogle(){
- if(!configured()){$('authpanel').querySelector('p').textContent='ตั้งค่า frontend/config.js ก่อนใช้งาน';return;}
- if(!window.google?.accounts?.id){setTimeout(startGoogle,200);return;}
- google.accounts.id.initialize({client_id:cfg.googleClientId,callback:async x=>{token=x.credential;$('authpanel').style.display='none';$('dashboard').style.display='block';$('signout').hidden=false;await reload();}});
- google.accounts.id.renderButton($('signin'),{theme:'filled_black',size:'large',shape:'pill',text:'signin_with',width:260});
-}
-startGoogle();
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  let password = '', state, busy = false;
+  async function rpc(action, payload = {}) {
+    const response = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, action, payload }),
+      signal: AbortSignal.timeout(25000)
+    });
+    const result = await response.json().catch(() => null);
+    if (!response.ok || !result?.ok || !result.state) {
+      throw Error(result?.error || 'เชื่อมต่อ API ไม่สำเร็จ');
+    }
+    return result.state;
+  }
+  function cell(row, value, className = '') {
+    const td = document.createElement('td');
+    td.className = className;
+    td.textContent = value;
+    row.append(td);
+    return td;
+  }
+  function button(label, run, className = '') {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.className = className;
+    b.onclick = run;
+    return b;
+  }
+  function render() {
+    $('global').checked = state.enabled;
+    $('globalText').textContent = state.enabled ? 'เปิด' : 'ปิด';
+    $('count').textContent = state.devices.filter(device => device.enabled).length + ' / ' + state.devices.length;
+    $('online').textContent = state.devices.filter(device => device.lastSeen > Date.now() - 300000).length;
+    $('onlineDetail').textContent = 'นับจากการตรวจสิทธิ์ล่าสุดของแต่ละเครื่อง';
+    const query = $('filter').value.toLowerCase();
+    const rows = $('devices');
+    rows.replaceChildren();
+    for (const d of state.devices) {
+      if (![d.label, d.model, d.deviceName, d.notes, d.deviceId].join(' ').toLowerCase().includes(query)) continue;
+      const row = document.createElement('tr');
+      const details = cell(row, d.label);
+      const sub = document.createElement('div');
+      sub.className = 'muted tiny';
+      sub.textContent = [d.model, d.deviceName, d.notes].filter(Boolean).join(' · ');
+      details.append(sub);
+      cell(row, d.deviceId, 'hash');
+      cell(row, d.enabled ? 'อนุญาต' : 'ระงับ', d.enabled ? 'pill good' : 'pill bad');
+      cell(row, d.lastSeen ? new Date(d.lastSeen).toLocaleString('th-TH') : '—');
+      const actions = cell(row, '', 'actions');
+      actions.append(button('แก้ไข', () => {
+        $('deviceId').value = d.deviceId;
+        $('label').value = d.label;
+        $('notes').value = d.notes;
+        $('deviceEnabled').checked = d.enabled;
+        $('editform').scrollIntoView({ behavior: 'smooth' });
+      }));
+      actions.append(button(d.enabled ? 'ระงับ' : 'อนุญาต',
+        () => change('setDeviceEnabled', { deviceId: d.deviceId, enabled: !d.enabled }), d.enabled ? 'danger' : ''));
+      rows.append(row);
+    }
+    $('audit').replaceChildren(...state.audit.map(entry => {
+      const row = document.createElement('div');
+      row.textContent = [entry.time, entry.action, entry.target].join(' · ');
+      return row;
+    }));
+  }
+  async function change(action, payload) {
+    if (busy) return;
+    busy = true;
+    const status = $('notice');
+    status.textContent = action === 'getState' ? 'กำลังโหลด…' : 'กำลังบันทึก…';
+    const controls = document.querySelectorAll('#dashboard button,#dashboard input,#signout');
+    controls.forEach(control => control.disabled = true);
+    try {
+      state = await rpc(action, payload);
+      status.textContent = action === 'getState' ? 'โหลดข้อมูลแล้ว' : 'บันทึกลง Google Sheets แล้ว';
+    } catch (error) {
+      status.textContent = 'ผิดพลาด · ' + error.message;
+    } finally {
+      if (state) render();
+      controls.forEach(control => control.disabled = false);
+      busy = false;
+    }
+  }
+  $('login').onsubmit = async event => {
+    event.preventDefault();
+    if (busy) return;
+    busy = true;
+    password = $('password').value;
+    $('loginMessage').textContent = 'กำลังตรวจรหัส…';
+    try {
+      state = await rpc('getState');
+      $('password').value = '';
+      $('authpanel').style.display = 'none';
+      $('dashboard').style.display = 'block';
+      $('signout').hidden = false;
+      render();
+    } catch (error) {
+      password = '';
+      $('loginMessage').textContent = error.message;
+    } finally {
+      busy = false;
+    }
+  };
+  $('global').onchange = () => {
+    const enabled = $('global').checked;
+    if (confirm(enabled ? 'เปิดสิทธิ์ใช้งาน?' : 'ปิดสิทธิ์ใช้งานทุกเครื่อง?')) change('setGlobalEnabled', { enabled });
+    else render();
+  };
+  $('reload').onclick = () => change('getState');
+  $('filter').oninput = render;
+  $('editform').onsubmit = event => {
+    event.preventDefault();
+    change('upsertDevice', {
+      deviceId: $('deviceId').value.trim(), label: $('label').value.trim(),
+      notes: $('notes').value.trim(), enabled: $('deviceEnabled').checked
+    });
+  };
+  $('hashBtn').onclick = async () => {
+    const id = $('androidId').value.trim();
+    if (!id) return;
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('com.gozza.lalamove|' + id));
+    $('deviceId').value = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, '0')).join('');
+  };
+  $('signout').onclick = () => location.reload();
+  setInterval(() => { if (password && state && !busy) change('getState'); }, 60000);
 })();
 </script></body></html>
