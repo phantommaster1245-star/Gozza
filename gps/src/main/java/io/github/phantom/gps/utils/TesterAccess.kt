@@ -2,7 +2,10 @@ package io.github.phantom.gps.utils
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.SystemClock
+import com.google.gson.JsonParser
+import org.json.JSONObject
 import android.provider.Settings
 import io.github.phantom.gps.BuildConfig
 import kotlinx.coroutines.*
@@ -12,9 +15,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicBoolean
-/** Anonymous HTTPS configuration only: never downloads executable code or embeds a GitHub token. */
+/** Registers this installation and refreshes its lease using the Sheets backend. */
 object TesterAccess {
- const val URL_BASE="https://api.github.com/repos/phantommaster1245-star/Gozza/contents/control/access.json?ref=main"
+ private const val REGISTRATION_URL="https://script.google.com/macros/s/AKfycbwUjllPl3HqguJUDR58LCalEqF41OarjK0S_3wSjxkp66o3Hr5nEBwmKBsweroFYJVh0g/exec"
  private val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main.immediate)
  private val busy=AtomicBoolean(false)
  private var started=false
@@ -49,25 +52,52 @@ object TesterAccess {
  private suspend fun check(c:Context) {
   if(!busy.compareAndSet(false,true))return
   try{
-   val allowed=withContext(Dispatchers.IO){
-    val connection=URL(URL_BASE+"&check="+System.currentTimeMillis()).openConnection() as HttpURLConnection
-    connection.connectTimeout=5000;connection.readTimeout=5000;connection.instanceFollowRedirects=false;connection.useCaches=false
-    connection.setRequestProperty("Cache-Control","no-cache, no-store")
-    connection.setRequestProperty("Accept","application/vnd.github.raw+json")
-    connection.setRequestProperty("User-Agent","Gozza-Tester")
-    try{
-     check(connection.responseCode==200)
-     val bytes=connection.inputStream.use { input ->
-      val output=java.io.ByteArrayOutputStream();val buffer=ByteArray(2048)
-      while(true){val n=input.read(buffer);if(n<0)break;require(output.size()+n<=16384);output.write(buffer,0,n)}
-      output.toByteArray()
-     }
-     AccessPolicy.permits(bytes.toString(Charsets.UTF_8),deviceId(c))
-    }finally{connection.disconnect()}
-   }
+   val allowed=withContext(Dispatchers.IO){registerAndCheck(c)}
    publish(c,allowed,if(allowed)"เครื่องนี้ได้รับอนุญาตแล้ว" else "เครื่องนี้ยังไม่ได้รับอนุญาต หรือผู้พัฒนาปิดการทดสอบ")
   }catch(e:CancellationException){throw e}catch(e:Exception){publish(c,false,"ตรวจสิทธิ์ไม่ได้ · ตรวจอินเทอร์เน็ตแล้วลองใหม่")}
   finally{busy.set(false)}
+ }
+ private fun registerAndCheck(context: Context): Boolean {
+  val id = deviceId(context)
+  require(id.isNotEmpty())
+  val deviceName = Settings.Global.getString(context.contentResolver, "device_name")
+      ?.takeIf { it.isNotBlank() } ?: Build.DEVICE
+  val payload = JSONObject()
+      .put("deviceId", id)
+      .put("model", Build.MODEL.take(100))
+      .put("deviceName", deviceName.take(100))
+      .toString().toByteArray(Charsets.UTF_8)
+
+  val connection = URL(REGISTRATION_URL).openConnection() as HttpURLConnection
+  connection.connectTimeout = 8000
+  connection.readTimeout = 12000
+  connection.requestMethod = "POST"
+  connection.doOutput = true
+  connection.useCaches = false
+  connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+  connection.setRequestProperty("Accept", "application/json")
+  try {
+   connection.outputStream.use { it.write(payload) }
+   check(connection.responseCode == 200)
+   val response = connection.inputStream.use { input ->
+    val data = java.io.ByteArrayOutputStream()
+    val buffer = ByteArray(1024)
+    while (true) {
+     val count = input.read(buffer)
+     if (count < 0) break
+     require(data.size() + count <= 16384)
+     data.write(buffer, 0, count)
+    }
+    data.toString("UTF-8")
+   }
+   val result = JsonParser().parse(response).asJsonObject
+   val ok = result.getAsJsonPrimitive("ok")
+   val allowed = result.getAsJsonPrimitive("allowed")
+   check(ok.isBoolean && ok.asBoolean && allowed.isBoolean)
+   return allowed.asBoolean
+  } finally {
+   connection.disconnect()
+  }
  }
  private fun publish(c:Context,allowed:Boolean,message:String){
   PrefManager.writeTesterAccess(allowed,SystemClock.elapsedRealtime(),MembershipLease.bootCount(c))
