@@ -26,3 +26,6 @@
 -keep class io.github.phantom.gps.ui.viewmodel.MainViewModel {
     public void updateXposedState();
 }
+# API 102 entry classes are instantiated by the framework from META-INF/xposed/java_init.list.
+-keep public class io.github.phantom.gps.xposed.ModernHookEntry { *; }
+-keep public class com.fulllock.probe.ModernDriverProbe { *; }

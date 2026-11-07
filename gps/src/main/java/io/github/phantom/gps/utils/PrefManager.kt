@@ -35,10 +35,28 @@ object PrefManager   {
 
 
     @Volatile private var sharedHookPreferences = false
-    val isHookSharingAvailable:Boolean get() { pref; return sharedHookPreferences }
+    val isHookSharingAvailable: Boolean
+        get() {
+            if (BuildConfig.MODERN_XPOSED) return HookPreferenceChannel.ready
+            pref
+            return sharedHookPreferences
+        }
+
+    @Synchronized
+    fun publishHookState(): Boolean = HookPreferenceChannel.publish(pref.all)
+
+    fun modernScopeStatus(): String = HookPreferenceChannel.scopeStatus()
+
+    @Synchronized
+    private fun saveHookSetting(change: SharedPreferences.Editor.() -> Unit) {
+        pref.edit().apply(change).apply()
+        if (BuildConfig.MODERN_XPOSED) publishHookState()
+    }
 
     private val pref: SharedPreferences by lazy {
-        try {
+        if (BuildConfig.MODERN_XPOSED) {
+            gsApp.getSharedPreferences("${BuildConfig.APPLICATION_ID}_prefs", Context.MODE_PRIVATE)
+        } else try {
             val prefsFile = "${BuildConfig.APPLICATION_ID}_prefs"
             gsApp.getSharedPreferences(
                 prefsFile,
@@ -55,9 +73,11 @@ object PrefManager   {
     }
 
 
+    @Synchronized
     fun writeTesterAccess(allowed:Boolean,issued:Long,boot:Int) {
         pref.edit().putBoolean("tester_access_allowed",allowed).putLong("tester_access_issued",issued)
             .putLong("tester_access_until",if(allowed)issued+AccessPolicy.LEASE_MS else issued).putInt("tester_access_boot",boot).commit()
+        if (BuildConfig.MODERN_XPOSED) publishHookState()
     }
     fun testerAccessValid(boot:Int)=AccessPolicy.fresh(pref.all,android.os.SystemClock.elapsedRealtime(),boot)
 
@@ -78,19 +98,19 @@ object PrefManager   {
 
     var isSystemHooked : Boolean
         get() = pref.getBoolean(HOOKED_SYSTEM, false)
-        set(value) { pref.edit().putBoolean(HOOKED_SYSTEM,value).apply() }
+        set(value) { saveHookSetting { putBoolean(HOOKED_SYSTEM, value) } }
 
     var isRandomPosition :Boolean
         get() = pref.getBoolean(RANDOM_POSITION, false)
-        set(value) { pref.edit().putBoolean(RANDOM_POSITION, value).apply() }
+        set(value) { saveHookSetting { putBoolean(RANDOM_POSITION, value) } }
 
     var randomRadiusMeters: String?
         get() = pref.getString(RANDOM_RADIUS_METERS, "10")
-        set(value) { pref.edit().putString(RANDOM_RADIUS_METERS, value).apply() }
+        set(value) { saveHookSetting { putString(RANDOM_RADIUS_METERS, value) } }
 
     var accuracy : String?
         get() = pref.getString(ACCURACY_SETTING,"10")
-        set(value) { pref.edit().putString(ACCURACY_SETTING,value).apply()}
+        set(value) { saveHookSetting { putString(ACCURACY_SETTING, value) } }
 
     var mapType : Int
         get() = pref.getInt(MAP_TYPE,1)
@@ -110,7 +130,7 @@ object PrefManager   {
 
     var isClipboardMonitorEnabled: Boolean
         get() = pref.getBoolean(ENABLE_CLIPBOARD_MONITOR, false)
-        set(value) = pref.edit().putBoolean(ENABLE_CLIPBOARD_MONITOR, value).apply()
+        set(value) { saveHookSetting { putBoolean(ENABLE_CLIPBOARD_MONITOR, value) } }
 
     var isClipboardAutoStart: Boolean
         get() = pref.getBoolean(CLIPBOARD_AUTO_START, true)
@@ -136,6 +156,10 @@ object PrefManager   {
 
     fun update(start:Boolean, la: Double, ln: Double) {
         runInBackground {
+            if (BuildConfig.MODERN_XPOSED) {
+                updateNow(start, la, ln)
+                return@runInBackground
+            }
             if(start&&!isHookSharingAvailable)return@runInBackground
             val prefEditor = pref.edit()
             prefEditor.putLong("latitude_bits", la.toBits())
@@ -161,8 +185,10 @@ object PrefManager   {
      * Synchronous write for cross-process consumers (XSharedPreferences in Xposed).
      * Prefer this for "Start/Stop" actions where we want the hook to react immediately.
      */
+    @Synchronized
     fun updateNow(start: Boolean, la: Double, ln: Double, trace: ClipboardTrace? = null, requestId: String = ""): Boolean {
         if(start&&!isHookSharingAvailable)return false
+        val previous = if (BuildConfig.MODERN_XPOSED && start) pref.all else null
         val prefEditor = pref.edit()
         prefEditor.putLong("latitude_bits", la.toBits())
         prefEditor.putLong("longitude_bits", ln.toBits())
@@ -172,7 +198,22 @@ object PrefManager   {
         prefEditor.putBoolean(START, start)
         prefEditor.putLong(LocationRefresh.TRACE_ID_PREF, trace?.id ?: 0)
         prefEditor.putLong(LocationRefresh.CAPTURED_AT_PREF, trace?.capturedAtMs ?: 0)
-        val committed = prefEditor.commit()
+        val localCommitted = prefEditor.commit()
+        val committed = localCommitted && (!BuildConfig.MODERN_XPOSED || publishHookState())
+        if (!committed && previous != null) {
+            val restore = pref.edit()
+            for (key in listOf(START, LATITUDE, LONGITUDE, "latitude_bits", "longitude_bits",
+                "direct_request_id", LocationRefresh.TRACE_ID_PREF, LocationRefresh.CAPTURED_AT_PREF)) {
+                when (val value = previous[key]) {
+                    is Boolean -> restore.putBoolean(key, value)
+                    is Float -> restore.putFloat(key, value)
+                    is Long -> restore.putLong(key, value)
+                    is String -> restore.putString(key, value)
+                    else -> restore.remove(key)
+                }
+            }
+            restore.commit()
+        }
         if (committed) trace?.mark("committed")
         return committed
     }

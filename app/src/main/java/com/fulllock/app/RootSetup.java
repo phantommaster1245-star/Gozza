@@ -26,12 +26,18 @@ final class RootSetup {
   new Thread(()->{String message;boolean success=false,manual=false,reused=false;try{
    if(android.os.Process.myUid()/100000!=0)throw new IOException("เปิดโหมดรูทจากผู้ใช้หลักของเครื่องเท่านั้น");
    stage="ROOT_PERMISSION";mountMaster=false;String id=shell("id",45);if(!id.contains("uid=0")){mountMaster=true;id=shell("id",15);}if(!id.contains("uid=0"))throw new IOException("ไม่ได้รับสิทธิ์รูท");
-   stage="FRAMEWORK";if(!shell("test -d /data/adb/lspd && echo FRAMEWORK",8).contains("FRAMEWORK"))throw new IOException("ไม่พบ LSPosed กรุณาติดตั้งและเปิดใช้งานก่อน");
-   if(!DriverBridge.probeConnected()&&!shell("pidof lspd || pidof org.lsposed.lspd",8).trim().matches("[0-9 ]+"))throw new IOException("LSPosed ยังไม่ทำงาน กรุณาเปิดใช้งานแล้วลองใหม่");
+   stage="FRAMEWORK";if(!BuildConfig.MODERN_XPOSED&&!shell("test -d /data/adb/lspd && echo FRAMEWORK",8).contains("FRAMEWORK"))throw new IOException("ไม่พบ LSPosed กรุณาติดตั้งและเปิดใช้งานก่อน");
+   if(!BuildConfig.MODERN_XPOSED&&!DriverBridge.probeConnected()&&!shell("pidof lspd || pidof org.lsposed.lspd",8).trim().matches("[0-9 ]+"))throw new IOException("LSPosed ยังไม่ทำงาน กรุณาเปิดใช้งานแล้วลองใหม่");
    String app="'"+c.getApplicationInfo().sourceDir.replace("'","'\\''")+"'";
    stage="CONFIGURE_MODULE";
-   reused=framework(shell("CLASSPATH="+app+" app_process /system/bin com.fulllock.app.RootFrameworkConfig "+app+" --check",12));
-   success=reused || framework(shell("CLASSPATH="+app+" app_process /system/bin com.fulllock.app.RootFrameworkConfig "+app,15));
+   if (BuildConfig.MODERN_XPOSED) {
+    // The published module service works without depending on LSPosed's private database schema.
+    reused = framework(io.github.phantom.gps.utils.PrefManager.INSTANCE.modernScopeStatus());
+    success = reused;
+   } else {
+    reused=framework(shell("CLASSPATH="+app+" app_process /system/bin com.fulllock.app.RootFrameworkConfig "+app+" --check",12));
+    success=reused || framework(shell("CLASSPATH="+app+" app_process /system/bin com.fulllock.app.RootFrameworkConfig "+app,15));
+   }
    manual=!success;if(!success)AppIssues.record(c,"ROOT_SETUP",null,false);message=reused?"เปิดโหมดเครื่องรูทแล้ว":success?"เตรียมโหมดเครื่องรูทแล้ว ต้องการรีสตาร์ตเครื่องหรือไม่?":frameworkHint();
    stage="VERIFY_PROBE";if(success&&installedOutdated(c))throw new IOException("ตรวจสอบส่วนเสริมไม่ผ่าน กรุณาลองอีกครั้ง");
    if(success){stage="READY";updatePending=false;Store.prefs(c).edit().putInt("probeUpgradeCheck",BuildConfig.VERSION_CODE).putBoolean("probeUpgradeIncomplete",false).apply();c.getSharedPreferences("root_research",0).edit().putBoolean("screenViews",true).apply();RootMode.setEnabled(c,true);ScreenActions.wake(c);}

@@ -7,8 +7,8 @@
 - Application ID: `com.gozza.lalamove`; Android 8.1 (API 27) ขึ้นไป
 - หน้าหลัก: แผนที่; เมนูซ้ายเลือก **แผนที่และ GPS**, **อ่านข้อมูลและวาดทับ**, **ตั้งค่า GPS** ได้ภายใน APK เดียว
 - แตะป้ายพิกัดจุดรับ (ไม่มีการคัดลอก) → Driver hook → root relay → GPS Binder ภายในแพ็กเกจเดียว → ตรวจความถูกต้องของแอปและพิกัด → ใช้พิกัดและรอ hook ยืนยัน
-- รวม Driver hook และ GPS hook ใน `assets/xposed_init`; ไม่ติดตั้ง companion APK แยก
-- เปิดโมดูล Gozza Lalamove ใน LSPosed เลือก System Framework, Lalamove Driver, Google Maps และ Gozza Lalamove แล้วรีสตาร์ตเครื่องตามขั้นตอนของ LSPosed
+- รวม Driver hook และ GPS hook ไว้ในโมดูล Gozza Lalamove ภายใน APK เดียว
+- สำหรับรุ่น Modern ให้เปิดโมดูลใน LSPosed แล้วเลือก System Framework, Lalamove Driver และ Google Maps จากนั้นรีสตาร์ตเครื่องเพื่อโหลด System Framework ใหม่
 - ปิดการตรวจ/บังคับอัปเดตจาก Full Lock และ GeoX สาธารณะ แจก APK โดยตรง ไม่มีการ publish เว็บหรือ deploy backend
 
 ## โหมดอ่านข้อมูลและวาดทับ
@@ -28,6 +28,10 @@
 ```
 
 APK: `app/build/outputs/apk/debug/app-debug.apk` เป็น debug build สำหรับทดสอบ ยังไม่ใช่ release สำหรับแจกใช้งานจริง
+
+รุ่น 0.1.53 build แบบ Modern (libxposed API 102) โดยค่าเริ่มต้น ใช้ `-PgozzaModern=false` เพื่อ build แบบ Legacy ที่ยังใช้ `assets/xposed_init` ทั้งสองแบบใช้แพ็กเกจเดียวกัน ให้ติดตั้งทีละแบบ ตัวเลือก Google Play Services ใช้สำหรับทดสอบ Fused Location ในโหมดระบบเพิ่มเติม
+
+เกณฑ์ตรวจบน LSPosed 2.2.1 และเมื่อมี 2.3.0 คือเปิดโมดูลและอ่าน scope ผ่านบริการ LSPosed ได้ จากนั้นตรวจ START และ STOP ใน Google Maps และ System Framework ตรวจการอ่านงานและป้ายใน Driver และแตะป้ายพิกัดเพื่อยืนยันว่า request ID เดิมได้ทั้ง `APPLIED` และ `HOOK_LOADED` ควรใช้พิกัดที่อ่านใหม่เพราะ Fused Location อาจคืนค่าแคชเดิมชั่วคราวหลัง START หรือ STOP
 
 ## ใช้งานโดยไม่ล็อกอิน
 

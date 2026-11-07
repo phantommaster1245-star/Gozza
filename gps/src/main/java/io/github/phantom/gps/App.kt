@@ -16,6 +16,7 @@ open class App:Application() {
  override fun onCreate() {
   super.onCreate();gsApp=this
   if(!AppIntegrity.isSelfValid(this))return
+  if (BuildConfig.MODERN_XPOSED) io.github.phantom.gps.utils.HookPreferenceChannel.initialize()
   io.github.phantom.gps.utils.TesterAccess.start(this)
   commonInit();AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
   ProcessLifecycleOwner.get().lifecycle.addObserver(object:DefaultLifecycleObserver {

@@ -1,4 +1,5 @@
 plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android'; id 'com.google.devtools.ksp'; id 'dagger.hilt.android.plugin' }
+def modernXposed = providers.gradleProperty('gozzaModern').orElse('true').get().toBoolean()
 
 // Private signing material lives outside this checkout. Never fall back to debug signing.
 def signingFile = file(System.getenv('FULLLOCK_SIGNING_PROPERTIES') ?: "${System.getProperty('user.home')}/.fulllock/signing/release.properties")
@@ -13,11 +14,12 @@ if (signingReady) {
 }
 android {
     namespace 'com.fulllock.app'
-    compileSdk 35
-    defaultConfig { applicationId 'com.gozza.lalamove'; minSdk 27; targetSdk 35; versionCode 53; versionName '0.1.52'; testInstrumentationRunner 'com.fulllock.app.ReadOnlyChecks' }
+    compileSdk 36
+    defaultConfig { applicationId 'com.gozza.lalamove'; minSdk 27; targetSdk 35; versionCode 54; versionName '0.1.53'; testInstrumentationRunner 'com.fulllock.app.ReadOnlyChecks' }
     defaultConfig { buildConfigField "boolean", "DEVICE_NOTIFICATION_CHECKS", project.hasProperty("deviceNotificationHarness") ? "true" : "false" }
     if (project.hasProperty("deviceNotificationHarness")) sourceSets.main.java.srcDir("src/deviceChecks/java")
     defaultConfig { buildConfigField "boolean", "PRIVATE_DISTRIBUTION", "true" }
+    defaultConfig { buildConfigField 'boolean', 'MODERN_XPOSED', modernXposed.toString() }
     buildFeatures { buildConfig true }
     defaultConfig { missingDimensionStrategy 'version', 'full' }
     kotlinOptions { jvmTarget = '17' }
@@ -51,6 +53,13 @@ android {
         }
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    sourceSets.main {
+        if (modernXposed) {
+            java.srcDir 'src/modern/java'
+        } else {
+            assets.srcDir 'src/legacy/assets'
+        }
+    }
 }
 tasks.configureEach {
     if (name == 'preReleaseBuild') doFirst {
@@ -70,3 +79,4 @@ dependencies { implementation project(':gps'); implementation 'com.google.dagger
 
 android.sourceSets.main.java.srcDir(rootProject.file("driverprobe/src/main/java"))
 dependencies { compileOnly files(rootProject.file("driverprobe/libs/xposed-api-82.jar")) }
+if (modernXposed) dependencies { compileOnly 'io.github.libxposed:api:102.0.0' }

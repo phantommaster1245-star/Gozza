@@ -82,7 +82,7 @@ class MainViewModel @Inject constructor(
     fun updateXposedState() {
         onMain {
             // isXposed.value = YukiHookAPI.Status.isModuleActive
-            isXposed.value = false
+            isXposed.value = io.github.phantom.gps.BuildConfig.MODERN_XPOSED && PrefManager.isHookSharingAvailable
         }
     }
 

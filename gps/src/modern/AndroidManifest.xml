@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <meta-data android:name="xposedmodule" tools:node="remove" />
+        <meta-data android:name="xposeddescription" tools:node="remove" />
+        <meta-data android:name="xposedminversion" tools:node="remove" />
+        <meta-data android:name="xposedsharedprefs" tools:node="remove" />
+        <meta-data android:name="xposedscope" tools:node="remove" />
+        <provider android:name="io.github.libxposed.service.XposedProvider"
+            android:authorities="${applicationId}.XposedService"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+    </application>
+</manifest>
