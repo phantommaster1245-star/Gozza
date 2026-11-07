@@ -2,7 +2,8 @@ package io.github.phantom.gps.utils
 import com.google.gson.JsonParser
 /** Pure, fail-closed policy; no network, Android state or credentials. */
 object AccessPolicy {
- const val LEASE_MS=150000L
+ // A temporary connection failure can reuse the last successful check for up to 15 minutes.
+ const val LEASE_MS = 15 * 60 * 1000L
  fun permits(json:String,device:String):Boolean=runCatching {
   require(json.length<=16384 && device.matches(Regex("[a-f0-9]{64}")))
   val root=JsonParser().parse(json).asJsonObject

@@ -167,16 +167,18 @@ abstract class BaseMapActivity: AppCompatActivity() {
         setupNavView()
         setupButtons()
         setupDrawer()
-        if (PrefManager.isJoystickEnabled){
-            startService(Intent(this, JoystickService::class.java))
-        }
-        ensureNotificationPermission()
     }
 
+    private var startupServicesInitialized = false
     private var membershipUiJob: Job? = null
     override fun onResume() {
         super.onResume()
         if(!io.github.phantom.gps.utils.TesterAccess.ensure(this))return
+        if (PrefManager.isJoystickEnabled) startService(Intent(this, JoystickService::class.java))
+        if (!startupServicesInitialized) {
+            startupServicesInitialized = true
+            ensureNotificationPermission()
+        }
         viewModel.updateXposedState()
         membershipUiJob?.cancel()
         membershipUiJob = lifecycleScope.launch {

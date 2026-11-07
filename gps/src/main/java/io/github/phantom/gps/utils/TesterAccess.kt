@@ -17,13 +17,15 @@ import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicBoolean
 /** Registers this installation and refreshes its lease using the Sheets backend. */
 object TesterAccess {
+ enum class State { Loading, Available, Unavailable }
+
  private const val REGISTRATION_URL="https://script.google.com/macros/s/AKfycbwUjllPl3HqguJUDR58LCalEqF41OarjK0S_3wSjxkp66o3Hr5nEBwmKBsweroFYJVh0g/exec"
  private val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main.immediate)
  private val busy=AtomicBoolean(false)
  private var started=false
  private var current=java.lang.ref.WeakReference<Activity>(null)
- private val mutable=MutableStateFlow("กำลังตรวจสิทธิ์เครื่องทดสอบ…")
- val status=mutable.asStateFlow()
+ private val mutable = MutableStateFlow(State.Loading)
+ val state = mutable.asStateFlow()
  @JvmStatic fun deviceId(c:Context):String {
   val id=Settings.Secure.getString(c.contentResolver,Settings.Secure.ANDROID_ID) ?: return ""
   return MessageDigest.getInstance("SHA-256").digest((BuildConfig.APPLICATION_ID+"|"+id).toByteArray()).joinToString("") { "%02x".format(it.toInt() and 255) }
@@ -40,22 +42,33 @@ object TesterAccess {
    override fun onActivitySaveInstanceState(a:Activity,b:android.os.Bundle){}
    override fun onActivityDestroyed(a:Activity){}
   })
-  PrefManager.writeTesterAccess(false,SystemClock.elapsedRealtime(),MembershipLease.bootCount(c))
   scope.launch { while(isActive){check(c.applicationContext);delay(120000)} }
  }
  @JvmStatic fun retry(c:Context){scope.launch{check(c.applicationContext)}}
  @JvmStatic fun ensure(activity:Activity):Boolean {
   if(available(activity))return true
+  if (mutable.value == State.Available) retry(activity)
   activity.startActivity(Intent(activity,io.github.phantom.gps.ui.TesterAccessActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP))
   return false
  }
- private suspend fun check(c:Context) {
-  if(!busy.compareAndSet(false,true))return
-  try{
-   val allowed=withContext(Dispatchers.IO){registerAndCheck(c)}
-   publish(c,allowed,if(allowed)"เครื่องนี้ได้รับอนุญาตแล้ว" else "เครื่องนี้ยังไม่ได้รับอนุญาต หรือผู้พัฒนาปิดการทดสอบ")
-  }catch(e:CancellationException){throw e}catch(e:Exception){publish(c,false,"ตรวจสิทธิ์ไม่ได้ · ตรวจอินเทอร์เน็ตแล้วลองใหม่")}
-  finally{busy.set(false)}
+ private suspend fun check(context: Context) {
+  if (!busy.compareAndSet(false, true)) return
+  try {
+   if (!available(context)) mutable.value = State.Loading
+   val allowed = try {
+    withContext(Dispatchers.IO) { registerAndCheck(context) }
+   } catch (error: CancellationException) {
+    throw error
+   } catch (_: Exception) {
+    // Network and server errors cannot grant access or extend a previously verified lease.
+    if (available(context)) mutable.value = State.Available
+    else publish(context, false)
+    return
+   }
+   publish(context, allowed)
+  } finally {
+   busy.set(false)
+  }
  }
  private fun registerAndCheck(context: Context): Boolean {
   val id = deviceId(context)
@@ -99,9 +112,9 @@ object TesterAccess {
    connection.disconnect()
   }
  }
- private fun publish(c:Context,allowed:Boolean,message:String){
+ private fun publish(c:Context,allowed:Boolean){
   PrefManager.writeTesterAccess(allowed,SystemClock.elapsedRealtime(),MembershipLease.bootCount(c))
-  mutable.value=message
+  mutable.value = if (available(c)) State.Available else State.Unavailable
   if(!allowed)current.get()?.takeIf { it !is io.github.phantom.gps.ui.TesterAccessActivity && !it.isFinishing }?.let { ensure(it) }
   if(!allowed && PrefManager.isStarted)runCatching { LocationController.stop(c) }
   if(!allowed)runCatching { LicenseGuard.stopAllMaintenance(c); c.stopService(Intent(c,JoystickService::class.java)) }

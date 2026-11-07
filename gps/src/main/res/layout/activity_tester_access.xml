@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gozza_background"
+    android:padding="24dp">
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/gozza_startup_loading"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/gozza_primary" />
+
+    <LinearLayout
+        android:id="@+id/error_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:accessibilityLiveRegion="polite"
+            android:gravity="center"
+            android:text="@string/gozza_startup_unavailable"
+            android:textColor="@color/gozza_textPrimary"
+            android:textSize="16sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:minHeight="48dp"
+            android:text="@string/gozza_startup_retry" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gozza_startup_loading">กำลังโหลด Gozza</string>
+    <string name="gozza_startup_unavailable">เปิดแอปไม่ได้ในตอนนี้</string>
+    <string name="gozza_startup_retry">ตรวจสอบอีกครั้ง</string>
+</resources>
