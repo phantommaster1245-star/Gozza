@@ -15,7 +15,7 @@ if (signingReady) {
 android {
     namespace 'com.fulllock.app'
     compileSdk 36
-    defaultConfig { applicationId 'com.gozza.lalamove'; minSdk 27; targetSdk 35; versionCode 55; versionName '0.1.54'; testInstrumentationRunner 'com.fulllock.app.ReadOnlyChecks' }
+    defaultConfig { applicationId 'com.gozza.lalamove'; minSdk 27; targetSdk 35; versionCode 56; versionName '0.1.55'; testInstrumentationRunner 'com.fulllock.app.ReadOnlyChecks' }
     defaultConfig { buildConfigField "boolean", "DEVICE_NOTIFICATION_CHECKS", project.hasProperty("deviceNotificationHarness") ? "true" : "false" }
     if (project.hasProperty("deviceNotificationHarness")) sourceSets.main.java.srcDir("src/deviceChecks/java")
     defaultConfig { buildConfigField "boolean", "PRIVATE_DISTRIBUTION", "true" }
@@ -76,6 +76,10 @@ android.sourceSets.main.java.srcDir(rootProject.file("transport/src/main/java"))
 if(project.hasProperty("menuIssueChecks")){dependencies {androidTestImplementation files(rootProject.file("driverprobe/libs/xposed-api-82.jar"))}}
 
 dependencies { implementation project(':gps'); implementation 'com.google.dagger:hilt-android:2.55'; ksp 'com.google.dagger:hilt-compiler:2.55' }
+dependencies {
+    implementation 'androidx.lifecycle:lifecycle-process:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+}
 
 android.sourceSets.main.java.srcDir(rootProject.file("driverprobe/src/main/java"))
 dependencies { compileOnly files(rootProject.file("driverprobe/libs/xposed-api-82.jar")) }

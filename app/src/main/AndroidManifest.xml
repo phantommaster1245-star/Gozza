@@ -17,6 +17,11 @@
         <service android:name=".JobListener" android:label="Gozza Lalamove · อ่านแจ้งเตือน Lalamove" android:exported="true" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter><action android:name="android.service.notification.NotificationListenerService" /></intent-filter>
         </service>
+        <service android:name=".DriverReadingService" android:exported="false"
+            android:stopWithTask="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keep user-enabled Driver reading and on-screen overlays active outside the Gozza task" />
+        </service>
     
 
 </application>

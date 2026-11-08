@@ -3,9 +3,10 @@ import android.app.*;import android.content.*;import android.os.*;import java.io
 /** Root is requested interactively. Uses a framework CLI or a schema-checked, module-scoped root helper. */
 final class RootSetup {
  static final int REQUIRED_PROBE_CODE=44;
+ static final int PROBE_SETUP_REVISION=54; // Modern entry and scope introduced in 0.1.53.
  static boolean moduleOutdated(long code,boolean matchingSignature){return code<REQUIRED_PROBE_CODE||!matchingSignature;}
  static volatile boolean updatePending;private static boolean upgradeAttempted;
- static boolean needsUpgrade(Context c){return Store.prefs(c).getInt("probeUpgradeCheck",0)<BuildConfig.VERSION_CODE||Store.prefs(c).getBoolean("probeUpgradeIncomplete",false)||installedOutdated(c);}
+ static boolean needsUpgrade(Context c){return Store.prefs(c).getInt("probeUpgradeCheck",0)<PROBE_SETUP_REVISION||Store.prefs(c).getBoolean("probeUpgradeIncomplete",false)||installedOutdated(c);}
  static boolean installedOutdated(Context c){try{var info=c.getPackageManager().getPackageInfo("com.gozza.lalamove",0);return moduleOutdated(android.os.Build.VERSION.SDK_INT>=28?info.getLongVersionCode():info.versionCode,c.getPackageManager().checkSignatures(c.getPackageName(),"com.gozza.lalamove")==android.content.pm.PackageManager.SIGNATURE_MATCH);}catch(Exception ignored){return true;}}
  static void afterUpgrade(MainActivity activity,Runnable repaint){
   if(BuildConfig.DEBUG||running||upgradeAttempted||activity.isFinishing()||activity.isDestroyed()||!RootMode.enabled(activity)||Updates.blocked(activity))return;
@@ -45,7 +46,7 @@ final class RootSetup {
    if(upgrade&&success)message=reused?"ตรวจสอบส่วนเสริมแล้ว ใช้รุ่นล่าสุดอยู่":"อัปเดตส่วนเสริมแล้ว ต้องการรีสตาร์ตเครื่องเพื่อเริ่มใช้ส่วนเสริมใหม่หรือไม่?";
    if(!success&&!upgrade)updatePending=false;
    lastReused=reused;lastMessage=message;final String text=message;final boolean ok=success,open=manual,quick=reused;running=false;
-   activity.runOnUiThread(()->{if(activity.isFinishing()||activity.isDestroyed())return;progress.dismiss();repaint.run();if(ok&&quick&&!upgrade){android.widget.Toast.makeText(activity,"เปิดโหมดเครื่องรูทแล้ว",android.widget.Toast.LENGTH_SHORT).show();return;}AlertDialog.Builder d=new AlertDialog.Builder(activity).setTitle(upgrade?"อัปเดตส่วนเสริม":ok?"โหมดเครื่องรูท":"เตรียมโหมดเครื่องรูท").setMessage(text);
+   activity.runOnUiThread(()->{if(activity.isFinishing()||activity.isDestroyed())return;if(ok)DriverReadingService.startIfEnabled(activity);progress.dismiss();repaint.run();if(ok&&quick&&!upgrade){android.widget.Toast.makeText(activity,"เปิดโหมดเครื่องรูทแล้ว",android.widget.Toast.LENGTH_SHORT).show();return;}AlertDialog.Builder d=new AlertDialog.Builder(activity).setTitle(upgrade?"อัปเดตส่วนเสริม":ok?"โหมดเครื่องรูท":"เตรียมโหมดเครื่องรูท").setMessage(text);
     if(ok&&quick)d.setPositiveButton("ปิด",null);
     else if(ok)d.setPositiveButton("รีสตาร์ตเครื่อง",(v,w)->new Thread(()->{try{shell("reboot",8);}catch(Exception ignored){}},"root-reboot").start()).setNegativeButton("ภายหลัง",null);
     else if(upgrade)d.setPositiveButton("ลองอีกครั้ง",(v,w)->begin(activity,repaint,true)).setNegativeButton("ภายหลัง",null);
