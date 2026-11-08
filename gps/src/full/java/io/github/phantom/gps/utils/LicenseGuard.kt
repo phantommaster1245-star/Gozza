@@ -12,7 +12,10 @@ object LicenseGuard {
   if(!GpsAccess.available(context)||!PrefManager.isStarted)return false
   return runCatching { ContextCompat.startForegroundService(context,Intent(context,MembershipHeartbeatService::class.java));true }.getOrDefault(false)
  }
- fun stopActiveHeartbeat(context:Context) { context.stopService(Intent(context,MembershipHeartbeatService::class.java)) }
+ fun stopActiveHeartbeat(context: Context) {
+  // A pending start must reach onStartCommand and promote before stopping itself.
+  if (MembershipHeartbeatService.running) context.stopService(Intent(context, MembershipHeartbeatService::class.java))
+ }
  fun stopAllMaintenance(context:Context) { stopActiveHeartbeat(context);ClipboardMonitorService.stopForegroundCapture() }
  fun isLocallyAllowedForCriticalAction(context:Context)=GpsAccess.available(context)
  fun runCriticalActionIfAllowed(context:Context,action:()->Unit):Boolean { if(!GpsAccess.available(context))return false;action();return true }
